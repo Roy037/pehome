@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.2.4"
 	id("io.spring.dependency-management") version "1.1.4"
+	kotlin("jvm") version "1.9.21"	
 }
 
 group = "vn.hoidanit"
@@ -22,9 +23,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
-		implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
-	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
-
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+	 implementation("org.springframework.security:spring-security-oauth2-jose")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("com.mysql:mysql-connector-j")

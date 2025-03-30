@@ -38,7 +38,7 @@ public class UserController {
         String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
         postManUser.setPassword(hashPassword);
         /**
-         * ma hoa mat khau
+         * ma hoa mat khau. RequestBody lay data
          */
         User User = this.userService.handleCreateUser(postManUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(User);
