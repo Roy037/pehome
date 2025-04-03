@@ -22,22 +22,11 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginDTO> login(@RequestBody LoginDTO loginDTO) {
-        /**
-         * Nạp input gồm username/password vào Security
-         */
-
+        // nap input
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginDTO.getUsername(), loginDTO.getPassword());
-        /**
-         * xác thực người dùng => cần viết hàm loadUserByUsername
-         */
-
+        // xac thua nguoi dung
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        /**
-         * nạp thông tin (nếu xử lý thành công) vào SecurityContext
-         */
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         return ResponseEntity.ok().body(loginDTO);
     }
