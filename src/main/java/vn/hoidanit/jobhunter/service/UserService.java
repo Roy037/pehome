@@ -14,14 +14,14 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public List<User> fetchAllUser() {
-        return this.userRepository.findAll();
-
-    }
-
     public UserService(
             UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    public List<User> fetchAllUser() {
+        return this.userRepository.findAll();
+
     }
 
     public User handleCreateUser(User user) {
