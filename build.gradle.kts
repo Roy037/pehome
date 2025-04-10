@@ -1,8 +1,7 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.2.4"
+id("org.springframework.boot") version "3.2.4"
 	id("io.spring.dependency-management") version "1.1.4"
-	kotlin("jvm") version "1.9.21"	
 	id("io.freefair.lombok") version "8.6"
 
 	
@@ -27,8 +26,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
-	 implementation("org.springframework.security:spring-security-oauth2-jose")
-	 implementation("com.turkraft.springfilter:jpa:3.1.7")
+	implementation("org.springframework.security:spring-security-oauth2-jose")
+
+	implementation("com.turkraft.springfilter:jpa:3.1.7")
+	
 
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")

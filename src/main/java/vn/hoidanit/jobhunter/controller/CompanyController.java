@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.turkraft.springfilter.boot.Filter;
+
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.domain.User;
@@ -26,7 +28,7 @@ import vn.hoidanit.jobhunter.service.CompanyService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 
 @RestController
-
+@RequestMapping("/api/v1")
 public class CompanyController {
     private final CompanyService companyService;
 
@@ -49,19 +51,9 @@ public class CompanyController {
 
     @GetMapping("/companies")
     public ResponseEntity<ResultPaginationDTO> getCompany(
-            // phan trang
-            @RequestParam("current") Optional<String> currentOptional,
-            @RequestParam("pageSize") Optional<String> pageSizeOptional) {
-        String sCurrent = currentOptional.isPresent() ? currentOptional.get() : "";
-        String sPageSize = pageSizeOptional.isPresent() ? pageSizeOptional.get() : "";
-        // convert
-        int current = Integer.parseInt(sCurrent);
-        int pageSize = Integer.parseInt(sPageSize);
-        Pageable pageable = PageRequest.of(current - 1, pageSize);
-        // truyen vao service
-        return ResponseEntity.status(HttpStatus.OK).body(this.companyService.handleGetCompany(pageable)); // tra
-                                                                                                          // ma
-                                                                                                          // loi
+            @Filter Specification<Company> spec, Pageable pageable) {
+
+        return ResponseEntity.ok(this.companyService.handleGetCompany(spec, pageable));
     }
 
     @DeleteMapping("/companies/{id}")

@@ -36,10 +36,6 @@ public class CompanyService {
         return this.companyRepository.save(company);
     }
 
-    // public List<Company> handleGetCompany() {
-    // return this.companyRepository.findAll();
-    // }
-
     public Company handleUpdateCompany(Company reqCompany) {
 
         Optional<Company> companyOptional = this.companyRepository.findById(reqCompany.getId());
@@ -56,9 +52,9 @@ public class CompanyService {
         return null;
     }
 
-    public ResultPaginationDTO handleGetCompany(Pageable pageable) {
+    public ResultPaginationDTO handleGetCompany(Specification<Company> spec, Pageable pageable) {
 
-        Page<Company> pageCompany = this.companyRepository.findAll(pageable);
+        Page<Company> pageCompany = this.companyRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
         Meta mt = new Meta();
 

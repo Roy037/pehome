@@ -1,5 +1,5 @@
 package vn.hoidanit.jobhunter.util.constant;
 
-public class GenderEnum {
-
+public enum GenderEnum {
+    FEMAIE, MALE, OTHER;
 }
