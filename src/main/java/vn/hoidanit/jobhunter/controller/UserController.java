@@ -3,11 +3,16 @@ package vn.hoidanit.jobhunter.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import vn.hoidanit.jobhunter.domain.User;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.hibernate.query.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -75,14 +80,24 @@ public class UserController {
 
     // fetch all user
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUser() {
-        return ResponseEntity.status(HttpStatus.OK).body(this.userService.fetchAllUser()); // tra ma loi
+    public ResponseEntity<ResultPaginationDTO> getAllUser(
+            // phan trang
+            @RequestParam("current") Optional<String> currentOptional,
+            @RequestParam("pageSize") Optional<String> pageSizeOptional) {
+        String sCurrent = currentOptional.isPresent() ? currentOptional.get() : "";
+        String sPageSize = pageSizeOptional.isPresent() ? pageSizeOptional.get() : "";
+        // convert
+        int current = Integer.parseInt(sCurrent);
+        int pageSize = Integer.parseInt(sPageSize);
+        Pageable pageable = PageRequest.of(current - 1, pageSize);
+        // truyen vao service
+        return ResponseEntity.status(HttpStatus.OK).body(this.userService.fetchAllUser(pageable)); // tra ma loi
     }
 
     // update
     @PutMapping("/users/{id}")
     public ResponseEntity<User> updateUser(@RequestBody User user) {
-        User User = this.userService.handleCreateUser(user);
+        User User = this.userService.handleUpdateUser(user);
         return ResponseEntity.status(HttpStatus.OK).body(User); // tra ma loi
     }
 }
