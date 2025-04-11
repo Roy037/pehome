@@ -2,7 +2,13 @@ package vn.hoidanit.jobhunter.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import vn.hoidanit.jobhunter.domain.response.Meta;
+import vn.hoidanit.jobhunter.domain.response.ResCreateUserDTO;
+import vn.hoidanit.jobhunter.domain.response.ResUpdateUserDTO;
+import vn.hoidanit.jobhunter.domain.response.ResUserDTO;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -37,6 +43,10 @@ public class UserService {
         this.userRepository.deleteById(id);
     }
 
+    public boolean isEmailExist(String email) {
+        return this.userRepository.existsByEmail(email);
+    }
+
     public User fetchUserById(long id) {
         Optional<User> userOptional = this.userRepository.findById(id);
         if (userOptional.isPresent()) {
@@ -50,9 +60,13 @@ public class UserService {
 
         User currentUser = this.fetchUserById(reqUser.getId());
         if (currentUser != null) {
-            currentUser.setEmail(reqUser.getEmail());
+            currentUser.setAddress(reqUser.getAddress());
+            currentUser.setGender(reqUser.getGender());
+            currentUser.setAge(reqUser.getAge());
+
             currentUser.setName(reqUser.getName());
-            currentUser.setPassword(reqUser.getPassword());
+
+            // currentUser.setPassword(reqUser.getPassword());
 
             // save
             currentUser = this.userRepository.save(currentUser);
@@ -79,7 +93,52 @@ public class UserService {
         mt.setTotal(pageUser.getTotalElements());
 
         rs.setMeta(mt);
-        rs.setResult(pageUser.getContent());
+        // remove sensitive data from user
+        List<ResUserDTO> listUser = pageUser.getContent()
+                .stream().map(item -> this.convertToResUserDTO(item))
+                .collect(Collectors.toList());
+
+        rs.setResult(listUser);
         return rs;
+    }
+
+    public ResCreateUserDTO convertToResCreateUserDTO(User user) {
+        ResCreateUserDTO res = new ResCreateUserDTO();
+
+        res.setId(user.getId());
+        res.setEmail(user.getEmail());
+        res.setName(user.getName());
+        res.setAge(user.getAge());
+        res.setCreatedAt(user.getCreatedAt());
+        res.setGender(user.getGender());
+        res.setAddress(user.getAddress());
+
+        return res;
+    }
+
+    public ResUserDTO convertToResUserDTO(User user) {
+        ResUserDTO res = new ResUserDTO();
+
+        res.setId(user.getId());
+        res.setEmail(user.getEmail());
+        res.setName(user.getName());
+        res.setAge(user.getAge());
+        res.setUpdatedAt(user.getUpdatedAt());
+        res.setCreatedAt(user.getCreatedAt());
+        res.setGender(user.getGender());
+        res.setAddress(user.getAddress());
+        return res;
+    }
+
+    public ResUpdateUserDTO convertToResUpdateUserDTO(User user) {
+        ResUpdateUserDTO res = new ResUpdateUserDTO();
+
+        res.setId(user.getId());
+        res.setName(user.getName());
+        res.setAge(user.getAge());
+        res.setUpdatedAt(user.getUpdatedAt());
+        res.setGender(user.getGender());
+        res.setAddress(user.getAddress());
+        return res;
     }
 }
