@@ -40,7 +40,6 @@ public class SecurityUtil {
     public String createToken(Authentication authentication) {
         Instant now = Instant.now();
         Instant validity = now.plus(this.jwtExpirationTime, ChronoUnit.SECONDS);
-
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
             .issuedAt(now)
@@ -48,7 +47,6 @@ public class SecurityUtil {
             .subject(authentication.getName())
             .claim("pehome", authentication)
             .build();
-
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
     }

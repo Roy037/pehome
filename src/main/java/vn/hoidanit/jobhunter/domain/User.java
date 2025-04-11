@@ -1,7 +1,6 @@
 package vn.hoidanit.jobhunter.domain;
 
 import java.time.Instant;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,14 +11,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import vn.hoidanit.jobhunter.util.constant.GenderEnum;
-import java.util.List;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
@@ -36,7 +27,6 @@ public class User {
     private String name;
     private String email;
     private String password;
-
     private int age;
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
@@ -153,7 +143,6 @@ public class User {
         this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
-
         this.createdAt = Instant.now();
     }
 
@@ -162,7 +151,6 @@ public class User {
         this.updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
-
         this.updatedAt = Instant.now();
     }
 

@@ -66,9 +66,6 @@ public class UserController {
         return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(ericUser));
     }
 
-    /*
-     * fetch user by id
-     */
     @GetMapping("/users/{id}")
     public ResponseEntity<ResUserDTO> getUserById(@PathVariable("id") long id) throws IdInvalidException {
         User fetchUser = this.userService.fetchUserById(id);
@@ -80,7 +77,6 @@ public class UserController {
                 .body(this.userService.convertToResUserDTO(fetchUser));
     }
 
-    // fetch all user
     @GetMapping("/users")
     @ApiMessage("fetch all user")
     public ResponseEntity<ResultPaginationDTO> getAllUser(
