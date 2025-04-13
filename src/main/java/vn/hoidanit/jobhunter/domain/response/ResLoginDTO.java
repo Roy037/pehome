@@ -1,5 +1,7 @@
 package vn.hoidanit.jobhunter.domain.response;
 
+import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,6 +45,7 @@ public class ResLoginDTO {
         private long id;
         private String email;
         private String name;
+
     }
 
 }
