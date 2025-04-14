@@ -50,7 +50,7 @@ public class SecurityConfiguration {
                                         "/api/v1/auth/refresh")
                                 .permitAll()
                                 .anyRequest().authenticated())
-                // .anyRequest().permitAll())
+
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint))
                 // disable default entry point
