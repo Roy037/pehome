@@ -1,5 +1,5 @@
 package vn.hoidanit.jobhunter.util.constant;
 
-public class LevelEnum {
-
+public enum LevelEnum {
+    INTERN, FRESHER, JUNIOR, MIDDLE, SENIOR
 }

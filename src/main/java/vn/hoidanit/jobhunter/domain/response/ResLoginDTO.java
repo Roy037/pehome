@@ -1,13 +1,10 @@
 package vn.hoidanit.jobhunter.domain.response;
 
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.hoidanit.jobhunter.domain.Role;
 
 @Setter
 @Getter
