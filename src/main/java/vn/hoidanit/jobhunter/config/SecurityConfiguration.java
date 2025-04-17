@@ -45,7 +45,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         authz -> authz
                                 .requestMatchers("/", "/api/v1/auth/login",
-                                        "/api/v1/auth/refresh")
+                                        "/api/v1/auth/refresh",
+                                        "/storage/**")
                                 .permitAll()
                                 .anyRequest().authenticated())
 
