@@ -1,5 +1,5 @@
 package vn.hoidanit.jobhunter.util.constant;
 
-public class ResumeStateEnum {
-
+public enum ResumeStateEnum {
+    PENDING, REVIEWING, APPROVED, REJECTED
 }
