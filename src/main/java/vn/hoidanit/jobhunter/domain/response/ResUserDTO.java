@@ -21,9 +21,7 @@ public class ResUserDTO {
     private int age;
     private Instant updatedAt;
     private Instant createdAt;
-
     private CompanyUser company;
-
     private RoleUser role;
 
     @Getter
