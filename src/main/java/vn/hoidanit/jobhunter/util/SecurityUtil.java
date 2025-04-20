@@ -80,26 +80,24 @@ public class SecurityUtil {
     private SecretKey getSecretKey() {
         byte[] keyBytes = Base64.from(jwtKey).decode();
         return new SecretKeySpec(keyBytes, 0, keyBytes.length,
-               JWT_ALGORITHM.getName());    
+               JWT_ALGORITHM.getName());
     }
     public Jwt checkValidRefreshToken(String token) {
                 NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(
                 getSecretKey()).macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
-                
+
                  try {
                     return jwtDecoder.decode(token);
-                
+
                  } catch (Exception e) {
                     System.out.println(">>> Refresh Token error: " + e.getMessage());
                 throw e;
             }
         };
-         
-    
-    
 
 
-    
+
+
     /**
      * Get the login of the current user.
      *
