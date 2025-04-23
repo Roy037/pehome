@@ -71,9 +71,9 @@ public class RoleService {
         return roleDB;
     }
 
-    // public void delete(long id) {
-    // this.roleRepository.deleteById(id);
-    // }
+    public void delete(long id) {
+        this.roleRepository.deleteById(id);
+    }
 
     public ResultPaginationDTO getRoles(Specification<Role> spec, Pageable pageable) {
         Page<Role> pRole = this.roleRepository.findAll(spec, pageable);

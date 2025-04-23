@@ -57,17 +57,16 @@ public class RoleController {
         return ResponseEntity.ok().body(this.roleService.update(r));
     }
 
-    // @DeleteMapping("/roles/{id}")
-    // @ApiMessage("Delete a role")
-    // public ResponseEntity<Void> delete(@PathVariable("id") long id) throws
-    // IdInvalidException {
-    // // check id
-    // if (this.roleService.fetchById(id) == null) {
-    // throw new IdInvalidException("Role với id = " + id + " không tồn tại");
-    // }
-    // this.roleService.delete(id);
-    // return ResponseEntity.ok().body(null);
-    // }
+    @DeleteMapping("/roles/{id}")
+    @ApiMessage("Delete a role")
+    public ResponseEntity<Void> delete(@PathVariable("id") long id) throws IdInvalidException {
+        // check id
+        if (this.roleService.fetchById(id) == null) {
+            throw new IdInvalidException("Role với id = " + id + " không tồn tại");
+        }
+        this.roleService.delete(id);
+        return ResponseEntity.ok().body(null);
+    }
 
     @GetMapping("/roles")
     @ApiMessage("Fetch roles")

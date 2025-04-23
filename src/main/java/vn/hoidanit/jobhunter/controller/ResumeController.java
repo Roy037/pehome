@@ -111,27 +111,26 @@ public class ResumeController {
             @Filter Specification<Resume> spec,
             Pageable pageable) {
 
-        // List<Long> arrJobIds = null;
-        // String email = SecurityUtil.getCurrentUserLogin().isPresent() == true
-        // ? SecurityUtil.getCurrentUserLogin().get()
-        // : "";
-        // User currentUser = this.userService.handleGetUserByUsername(email);
-        // if (currentUser != null) {
-        // Company userCompany = currentUser.getCompany();
-        // if (userCompany != null) {
-        // List<Job> companyJobs = userCompany.getJobs();
-        // if (companyJobs != null && companyJobs.size() > 0) {
-        // arrJobIds = companyJobs.stream().map(x -> x.getId())
-        // .collect(Collectors.toList());
-        // }
-        // }
-        // }
+        List<Long> arrJobIds = null;
+        String email = SecurityUtil.getCurrentUserLogin().isPresent() == true
+                ? SecurityUtil.getCurrentUserLogin().get()
+                : "";
+        User currentUser = this.userService.handleGetUserByUsername(email);
+        if (currentUser != null) {
+            Company userCompany = currentUser.getCompany();
+            if (userCompany != null) {
+                List<Job> companyJobs = userCompany.getJobs();
+                if (companyJobs != null && companyJobs.size() > 0) {
+                    arrJobIds = companyJobs.stream().map(x -> x.getId())
+                            .collect(Collectors.toList());
+                }
+            }
+        }
 
-        // Specification<Resume> jobInSpec =
-        // filterSpecificationConverter.convert(filterBuilder.field("job")
-        // .in(filterBuilder.input(arrJobIds)).get());
+        Specification<Resume> jobInSpec = filterSpecificationConverter.convert(filterBuilder.field("job")
+                .in(filterBuilder.input(arrJobIds)).get());
 
-        // Specification<Resume> finalSpec = jobInSpec.and(spec);
+        Specification<Resume> finalSpec = jobInSpec.and(spec);
 
         return ResponseEntity.ok().body(this.resumeService.fetchAllResume(spec, pageable));
     }
