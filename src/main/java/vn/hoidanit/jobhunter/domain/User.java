@@ -44,7 +44,6 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
-
     private String address;
 
     @Column(columnDefinition = "MEDIUMTEXT")

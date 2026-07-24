@@ -45,8 +45,7 @@ public class SkillService {
         currentSkill.getJobs().forEach(job -> job.getSkills().remove(currentSkill));
 
         // delete subscriber (inside subscriber_skill table)
-        // currentSkill.getSubscribers().forEach(subs ->
-        // subs.getSkills().remove(currentSkill));
+        currentSkill.getSubscribers().forEach(subs -> subs.getSkills().remove(currentSkill));
 
         // delete skill
         this.skillRepository.delete(currentSkill);
@@ -65,7 +64,6 @@ public class SkillService {
         mt.setTotal(pageUser.getTotalElements());
 
         rs.setMeta(mt);
-
         rs.setResult(pageUser.getContent());
 
         return rs;

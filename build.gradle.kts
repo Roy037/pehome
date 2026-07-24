@@ -1,10 +1,8 @@
 plugins {
 	java
-id("org.springframework.boot") version "3.2.4"
+	id("org.springframework.boot") version "3.2.4"
 	id("io.spring.dependency-management") version "1.1.4"
-	id("io.freefair.lombok") version "8.6"
-
-	
+	id("io.freefair.lombok") version "6.6.1" // <-- Hạ từ 8.6 xuống 6.6.1
 }
 
 group = "vn.hoidanit"
@@ -27,9 +25,11 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	implementation("org.springframework.security:spring-security-oauth2-jose")
+	implementation("org.springframework.boot:spring-boot-starter-mail")
+	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
 
 	implementation("com.turkraft.springfilter:jpa:3.1.7")
-	
+
 
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
