@@ -25,6 +25,8 @@ import vn.hoidanit.jobhunter.util.SecurityUtil;
 @Getter
 @Setter
 public class Company {
+//    asd
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
