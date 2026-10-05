@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thư mời phỏng vấn</title>
+</head>
+<body style="margin:0;padding:0;background:#FFF7EF;font-family:Arial,Helvetica,sans-serif;color:#1F1A16;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7EF;padding:32px 12px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #EDE1D5;border-radius:12px;">
+                <tr th:replace="~{fragments :: logo}"></tr>
+                <tr>
+                    <td style="padding:8px 32px 0;font-size:18px;font-weight:700;"
+                        th:text="${reschedule} ? 'Lịch phỏng vấn đã được cập nhật' : 'Bạn được mời phỏng vấn'">Bạn được mời phỏng vấn</td>
+                </tr>
+                <tr>
+                    <td style="padding:12px 32px 0;font-size:14px;line-height:1.6;color:#3E3630;">
+                        Xin chào <strong th:text="${name}">bạn</strong>,<br>
+                        <span th:text="${company}">Công ty</span> mời bạn tham gia buổi phỏng vấn cho vị trí
+                        <strong th:text="${jobName}">Vị trí</strong>.
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:16px 32px 0;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7EF;border-radius:8px;">
+                            <tr>
+                                <td style="padding:14px 16px;font-size:13.5px;line-height:1.7;color:#3E3630;">
+                                    <strong>Thời gian:</strong> <span th:text="${when}">10:00 ngày 20/10/2026</span><br>
+                                    <strong>Giờ Việt Nam (GMT+7)</strong>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr th:if="${note != null}">
+                    <td style="padding:14px 32px 0;">
+                        <div style="padding:12px 16px;background:#FFF7EF;border-left:3px solid #E3763C;border-radius:6px;font-size:13.5px;line-height:1.6;color:#3E3630;">
+                            <strong>Lời nhắn từ nhà tuyển dụng:</strong><br>
+                            <span th:text="${note}" style="white-space:pre-line;">…</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="padding:22px 32px 8px;">
+                        <a th:href="${meetingLink}" href="#" style="display:inline-block;padding:12px 28px;background:#E3763C;color:#1F1409;font-weight:700;font-size:14px;text-decoration:none;border-radius:8px;">Tham gia phỏng vấn</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:6px 32px 0;font-size:12.5px;line-height:1.6;color:#6B635C;text-align:center;word-break:break-all;">
+                        Nếu nút không hoạt động, mở liên kết: <span th:text="${meetingLink}" style="color:#A8491D;">https://…</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:18px 32px 24px;font-size:12px;line-height:1.6;color:#6B635C;">
+                        Hãy vào đúng giờ và chuẩn bị sẵn CV cùng các câu hỏi bạn muốn trao đổi. Chúc bạn phỏng vấn thành công!
+                    </td>
+                </tr>
+            </table>
+            <table th:replace="~{fragments :: footer}"></table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

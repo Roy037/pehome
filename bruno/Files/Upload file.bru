@@ -1,0 +1,20 @@
+meta {
+  name: Upload file
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/files
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file()
+  folder: resume
+}
+
+docs {
+  folder: resume (pdf, doc, docx, odt, rtf, jpg, jpeg, png, webp) | company (jpg/jpeg/png/webp, public) | company-doc (pdf, jpg, jpeg, png, webp; business licence, private, employers only) | avatar (jpg/jpeg/png/webp only). The first bytes of the file are checked against its extension. Max 5 MB (413 above). Returns the stored fileName. Logos and avatars are public at /storage/company/<file> and /storage/avatar/<file>; CVs are never public, open them through "Resumes / Open resume document (CV)". Needs hoidanit.upload-file.base-uri (env UPLOAD_BASE_URI) pointing at a local folder.
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Download file
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/files?fileName=example.pdf&folder=resume
+  body: none
+  auth: inherit
+}
+
+params:query {
+  fileName: example.pdf
+  folder: resume
+}

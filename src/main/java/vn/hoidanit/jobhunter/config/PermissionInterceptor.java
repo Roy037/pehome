@@ -1,6 +1,7 @@
 package vn.hoidanit.jobhunter.config;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,18 @@ import vn.hoidanit.jobhunter.util.error.PermissionException;
 
 public class PermissionInterceptor implements HandlerInterceptor {
 
+    // Any signed-in user may manage their own job-alert subscription and apply for jobs; everything else is permission-checked.
+    private static final Set<String> SELF_SERVICE = Set.of(
+            "POST /api/v1/subscribers", "PUT /api/v1/subscribers", "POST /api/v1/subscribers/skills",
+            // a signed-in user may also follow the unsubscribe link from their e-mail
+            "POST /api/v1/subscribers/unsubscribe",
+            "POST /api/v1/resumes", "POST /api/v1/resumes/by-user",
+            // authorised inside the controller (owner, the job's company, or SUPER_ADMIN)
+            "GET /api/v1/resumes/{id}/document", "GET /api/v1/resumes/check-applied");
+
+    // Reading jobs, companies and skills is public; writing them needs a role permission.
+    private static final List<String> PUBLIC_READ = List.of("/api/v1/jobs", "/api/v1/companies", "/api/v1/skills");
+
     @Autowired
     UserService userService;
 
@@ -29,12 +42,11 @@ public class PermissionInterceptor implements HandlerInterceptor {
             throws Exception {
 
         String path = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
-        String requestURI = request.getRequestURI();
         String httpMethod = request.getMethod();
-        System.out.println(">>> RUN preHandle");
-        System.out.println(">>> path= " + path);
-        System.out.println(">>> httpMethod= " + httpMethod);
-        System.out.println(">>> requestURI= " + requestURI);
+        if (SELF_SERVICE.contains(httpMethod + " " + path)
+                || ("GET".equals(httpMethod) && path != null && PUBLIC_READ.stream().anyMatch(path::startsWith))) {
+            return true;
+        }
 
         // check permission
         String email = SecurityUtil.getCurrentUserLogin().isPresent() == true

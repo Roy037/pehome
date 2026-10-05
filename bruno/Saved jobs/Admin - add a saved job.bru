@@ -1,0 +1,22 @@
+meta {
+  name: Admin: add a saved job
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/saved-jobs
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "userId": 1,
+    "jobId": "{{jobId}}"
+  }
+}
+
+docs {
+  Saves a job on behalf of a user. Duplicate pairs are rejected.
+}

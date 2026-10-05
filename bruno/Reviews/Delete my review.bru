@@ -1,0 +1,11 @@
+meta {
+  name: Delete my review
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/me/reviews/{{companyId}}
+  body: none
+  auth: inherit
+}

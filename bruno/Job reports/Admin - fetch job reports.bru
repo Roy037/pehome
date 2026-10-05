@@ -1,0 +1,22 @@
+meta {
+  name: Admin: fetch job reports
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/job-reports?page=1&size=10&sort=createdAt,desc&filter=reason : 'SCAM'
+  body: none
+  auth: inherit
+}
+
+params:query {
+  page: 1
+  size: 10
+  sort: createdAt,desc
+  filter: reason : 'SCAM'
+}
+
+docs {
+  SUPER_ADMIN only (permission JOB_REPORTS).
+}

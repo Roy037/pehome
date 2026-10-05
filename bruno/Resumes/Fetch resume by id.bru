@@ -1,0 +1,11 @@
+meta {
+  name: Fetch resume by id
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/resumes/1
+  body: none
+  auth: inherit
+}

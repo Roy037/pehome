@@ -5,7 +5,9 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import vn.hoidanit.jobhunter.util.constant.EmploymentTypeEnum;
 import vn.hoidanit.jobhunter.util.constant.LevelEnum;
+import vn.hoidanit.jobhunter.util.constant.WorkModeEnum;
 
 @Getter
 @Setter
@@ -16,10 +18,13 @@ public class ResCreateJobDTO {
     private String location;
 
     private double salary;
+    private Double salaryMax;
 
     private int quantity;
 
     private LevelEnum level;
+    private EmploymentTypeEnum employmentType;
+    private WorkModeEnum workMode;
 
     private Instant startDate;
     private Instant endDate;

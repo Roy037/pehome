@@ -1,0 +1,15 @@
+meta {
+  name: Admin: unlock a user account
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/users/1/unlock
+  body: none
+  auth: inherit
+}
+
+docs {
+  SUPER_ADMIN only (permission USERS).
+}

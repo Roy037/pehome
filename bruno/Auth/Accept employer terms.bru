@@ -1,0 +1,15 @@
+meta {
+  name: Accept employer terms
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/me/terms
+  body: none
+  auth: inherit
+}
+
+docs {
+  Employer accounts only (403 for anyone without a company). Records that the account accepted the current terms of service; the login payload has termsRequired=true until then, and posting a job is refused.
+}

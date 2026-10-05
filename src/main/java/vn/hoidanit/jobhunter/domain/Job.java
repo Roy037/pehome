@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,10 +24,13 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
+import vn.hoidanit.jobhunter.util.constant.EmploymentTypeEnum;
 import vn.hoidanit.jobhunter.util.constant.LevelEnum;
+import vn.hoidanit.jobhunter.util.constant.WorkModeEnum;
 
 @Entity
 @Table(name = "jobs")
@@ -43,12 +47,25 @@ public class Job {
     @NotBlank(message = "location không được để trống")
     private String location;
 
+    // minimum monthly salary in VND; 0 together with no maximum means "thỏa thuận" (negotiable)
+    @PositiveOrZero(message = "Mức lương không được âm")
     private double salary;
 
+    // maximum of the range; null when only a minimum (or nothing) was given
+    @PositiveOrZero(message = "Mức lương tối đa không được âm")
+    private Double salaryMax;
+
+    @PositiveOrZero(message = "Số lượng tuyển không được âm")
     private int quantity;
 
     @Enumerated(EnumType.STRING)
     private LevelEnum level;
+
+    @Enumerated(EnumType.STRING)
+    private EmploymentTypeEnum employmentType;
+
+    @Enumerated(EnumType.STRING)
+    private WorkModeEnum workMode;
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
@@ -56,6 +73,18 @@ public class Job {
     private Instant startDate;
     private Instant endDate;
     private boolean active;
+
+    // pinned to the top of the job list until this moment; set by a paid order, never by the client
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Instant pinnedUntil;
+
+    // Moderation: a locked post is hidden from the public and takes no applications; only an admin changes this.
+    @Column(columnDefinition = "bit(1) not null default 0")
+    private boolean locked;
+    @Column(length = 500)
+    private String lockReason;
+    private Instant lockedAt;
+
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;

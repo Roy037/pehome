@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Việc làm mới phù hợp với bạn</title>
+</head>
+<body style="margin:0;padding:0;background:#FFF7EF;font-family:Arial,Helvetica,sans-serif;color:#1F1A16;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7EF;padding:32px 12px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #EDE1D5;border-radius:12px;">
+                <tr th:replace="~{fragments :: logo}"></tr>
+                <tr><td style="padding:8px 32px 0;font-size:18px;font-weight:700;">Việc làm mới phù hợp với kỹ năng của bạn</td></tr>
+                <tr>
+                    <td style="padding:12px 32px 4px;font-size:14px;line-height:1.6;color:#3E3630;">
+                        Xin chào <strong th:text="${name}">bạn</strong>, đây là những tin tuyển dụng mới tuần này khớp với kỹ năng bạn đã chọn:
+                    </td>
+                </tr>
+                <tr th:replace="~{fragments :: jobs(${jobs})}"></tr>
+                <tr>
+                    <td align="center" style="padding:22px 32px 8px;">
+                        <a th:href="${moreUrl}" href="#" style="display:inline-block;padding:11px 24px;background:#E3763C;color:#1F1409;font-weight:700;font-size:14px;text-decoration:none;border-radius:8px;">Xem thêm việc làm</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:12px 32px 24px;font-size:12px;line-height:1.6;color:#6B635C;">
+                        Bạn nhận email này vì đã đăng ký nhận việc làm theo kỹ năng. Đổi kỹ năng trong tài khoản của bạn, mục “Nhận việc làm qua email”.
+                        <a th:if="${unsubscribeUrl != null}" th:href="${unsubscribeUrl}" href="#" style="color:#A8491D;">Hủy nhận bản tin</a>
+                    </td>
+                </tr>
+            </table>
+            <table th:replace="~{fragments :: footer}"></table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

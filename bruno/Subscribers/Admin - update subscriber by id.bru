@@ -1,0 +1,30 @@
+meta {
+  name: Admin: update subscriber by id
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/subscribers/{{subscriberId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Nguyễn Văn A",
+    "email": "a@example.com",
+    "skills": [
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      }
+    ]
+  }
+}
+
+docs {
+  Updates name, email and skills. Email must stay unique.
+}

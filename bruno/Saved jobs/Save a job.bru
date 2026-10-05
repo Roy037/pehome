@@ -1,0 +1,15 @@
+meta {
+  name: Save a job
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/me/saved-jobs/{{jobId}}
+  body: none
+  auth: inherit
+}
+
+docs {
+  Idempotent. 403 once you hold as many saved jobs as your plan allows (free: 20).
+}

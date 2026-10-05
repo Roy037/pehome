@@ -1,0 +1,15 @@
+meta {
+  name: Follow a company
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/me/followed-companies/{{companyId}}
+  body: none
+  auth: inherit
+}
+
+docs {
+  Idempotent. 404 for an unknown or unapproved company.
+}

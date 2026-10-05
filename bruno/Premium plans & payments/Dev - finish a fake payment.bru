@@ -1,0 +1,22 @@
+meta {
+  name: Dev: finish a fake payment
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/payments/mock/complete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "txnRef": "…",
+    "success": true
+  }
+}
+
+docs {
+  Only when PAYMENT_MOCK=true. Returns the signed return URL to open.
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<body>
+<table>
+    <!-- itjobs logo at the top of every card; the PNG is attached inline by EmailService (cid:logo) -->
+    <tr th:fragment="logo">
+        <td style="padding:28px 32px 8px;">
+            <img th:src="${logoSrc ?: 'cid:logo'}" src="cid:logo" alt="itjobs" width="112" height="44" style="display:block;border:0;outline:none;text-decoration:none;">
+        </td>
+    </tr>
+
+    <!-- Job cards: company logo (inline attachment, or the company initials), title, company and salary -->
+    <tr th:fragment="jobs(jobs)" th:each="job : ${jobs}">
+        <td style="padding:10px 32px 0;">
+            <a th:href="${job['url']}" href="#" style="display:block;padding:12px 14px;border:1px solid #EDE1D5;border-radius:10px;text-decoration:none;color:#1F1A16;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td width="56" valign="middle" style="width:56px;">
+                            <img th:if="${job['logoSrc'] != null}" th:src="${job['logoSrc']}" src="#" alt="" width="44" height="44"
+                                 style="display:block;width:44px;height:44px;border:1px solid #EDE1D5;border-radius:8px;background:#ffffff;object-fit:contain;">
+                            <div th:unless="${job['logoSrc'] != null}" th:text="${job['initials']}"
+                                 style="width:44px;height:44px;line-height:44px;border-radius:8px;background:#FDE7DA;color:#A8491D;font-size:15px;font-weight:700;text-align:center;">IT</div>
+                        </td>
+                        <td valign="middle">
+                            <span th:text="${job['name']}" style="display:block;font-size:14.5px;font-weight:700;color:#1F1A16;">Vị trí</span>
+                            <span style="display:block;margin-top:2px;font-size:12.5px;color:#6B635C;">
+                                <span th:text="${job['company']}">Công ty</span> · <span th:text="${job['salary']}" style="color:#A8491D;font-weight:700;">Lương</span>
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </a>
+        </td>
+    </tr>
+</table>
+
+<!-- Brand line under the card -->
+<table th:fragment="footer" role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+    <tr><td align="center" style="padding:16px 32px 0;font-size:11.5px;line-height:1.6;color:#9A8F86;">itjobs · Tìm công việc hợp với cuộc sống của bạn</td></tr>
+</table>
+</body>
+</html>

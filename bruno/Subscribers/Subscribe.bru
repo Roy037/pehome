@@ -1,0 +1,27 @@
+meta {
+  name: Subscribe
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/subscribers
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "admin@gmail.com",
+    "name": "Admin",
+    "skills": [
+      {
+        "id": 1
+      }
+    ]
+  }
+}
+
+docs {
+  Signed-in users only; the e-mail is always forced to your own address. A user may only edit their own subscription (PUT /subscribers); turning off the alert switch in the profile deletes it.
+}

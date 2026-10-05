@@ -1,0 +1,34 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "admin@gmail.com",
+    "password": "123456"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data) {
+    bru.setVar("access_token", res.body.data.access_token);
+  }
+}
+
+tests {
+  test("login succeeded", function () {
+    expect(res.body.data.access_token).to.be.a("string");
+  });
+}
+
+docs {
+  After 8 wrong passwords for an account within 15 minutes the next attempts return 429.
+}

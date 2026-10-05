@@ -1,0 +1,25 @@
+meta {
+  name: Admin: reject a company (with reason)
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/companies/1/reject
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "reason": "Chưa có giấy phép kinh doanh"
+  }
+}
+
+docs {
+  SUPER_ADMIN only. A rejected company stays hidden, keeps the reason, and the employer sees it on their account. Saving the company profile as that employer sends it back to review (pending); approving clears the rejection.
+}

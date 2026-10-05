@@ -1,0 +1,2841 @@
+{
+    "info": {
+        "name": "PolyCareers API",
+        "description": "Spring Boot backend for PolyCareers. Run \"Auth / Login\" first: it stores the token in {{access_token}}, which every other request uses. Change {{baseUrl}} for other environments.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080/api/v1"
+        },
+        {
+            "key": "access_token",
+            "value": ""
+        },
+        {
+            "key": "companyId",
+            "value": "1"
+        },
+        {
+            "key": "jobId",
+            "value": "10"
+        },
+        {
+            "key": "reviewId",
+            "value": "1"
+        },
+        {
+            "key": "savedJobId",
+            "value": "1"
+        },
+        {
+            "key": "subscriberId",
+            "value": "1"
+        },
+        {
+            "key": "resumeId",
+            "value": "1"
+        },
+        {
+            "key": "reportId",
+            "value": "1"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"admin@gmail.com\",\n  \"password\": \"123456\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": " After 8 wrong passwords for an account within 15 minutes the next attempts return 429."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json();",
+                                    "pm.test('login succeeded', () => pm.expect(body.data && body.data.access_token).to.be.a('string'));",
+                                    "if (body.data) pm.collectionVariables.set('access_token', body.data.access_token);"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Nguyễn Minh Anh\",\n  \"email\": \"minhanh@example.com\",\n  \"password\": \"123456\",\n  \"age\": 22,\n  \"gender\": \"FEMALE\",\n  \"address\": \"TP. Hồ Chí Minh\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "gender: MALE | FEMALE | OTHER"
+                    }
+                },
+                {
+                    "name": "Register employer",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register-employer",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register-employer"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"companyName\": \"Công ty TNHH Ví Dụ\",\n  \"companyAddress\": \"Quận 1, TP. Hồ Chí Minh\",\n  \"name\": \"Trần Thu Hà\",\n  \"email\": \"hr@vidu.example.com\",\n  \"password\": \"123456\",\n  \"taxCode\": \"0312345678\",\n  \"phone\": \"0901234567\",\n  \"website\": \"https://vidu.example.com\",\n  \"acceptTerms\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Creates an unapproved company and an HR user. The employer can sign in and see the admin area, but cannot post jobs until an admin runs \"Companies / Approve company\". Needs taxCode (10 digits, or 13 as 0123456789-001; unique, 409 if used), phone, and acceptTerms=true (400 otherwise); website is optional."
+                    }
+                },
+                {
+                    "name": "Forgot password",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/forgot-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "forgot-password"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"minhanh@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Public. Always answers 200 with the same message, whether or not the e-mail is registered (no account enumeration). If it is, an e-mail with a link /reset-password?token=... (valid 15 minutes, one use) is sent; asking again within a minute sends nothing new. Needs MAIL_* settings in .env."
+                    }
+                },
+                {
+                    "name": "Reset password",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/reset-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "reset-password"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"token\": \"<token from the e-mail link>\",\n  \"newPassword\": \"matkhaumoi1\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Public. 200 sets the new password (min 6 chars), retires every outstanding link and revokes refresh tokens; 400 when the token is unknown, already used or older than 15 minutes."
+                    }
+                },
+                {
+                    "name": "Get account",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/account",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "account"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Refresh token (cookie)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/refresh",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "refresh"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/logout",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "logout"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Social sign-in providers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/oauth/providers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "oauth",
+                                "providers"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Public. Which of Google / Facebook / LinkedIn have keys on the server (enabled=true). Sign-in itself is a browser redirect: open {{baseUrl}}/auth/oauth/google/authorize?next=/ in a browser, not here."
+                    }
+                },
+                {
+                    "name": "Change password",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"123456\",\n  \"newPassword\": \"new-password-123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Signed-in user. Wrong current password counts toward the login limit (8 tries / 15 minutes). Afterwards every session is signed out and a notice e-mail is sent."
+                    }
+                },
+                {
+                    "name": "Verify e-mail",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/verify-email",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "verify-email"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"token\": \"token-from-the-email-link\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Public. The token comes from the link /xac-thuc-email?token=... in the welcome e-mail (valid 48 hours). Using it twice still answers 200."
+                    }
+                },
+                {
+                    "name": "Resend verification e-mail",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/resend-verification",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "resend-verification"
+                            ]
+                        },
+                        "description": "Signed-in, not yet verified account. 429 if asked again within a minute, 409 when already verified."
+                    }
+                },
+                {
+                    "name": "Accept employer terms",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/terms",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "terms"
+                            ]
+                        },
+                        "description": "Employer accounts only (403 for anyone without a company). Records that the account accepted the current terms of service; the login payload has termsRequired=true until then, and posting a job is refused."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Jobs",
+            "item": [
+                {
+                    "name": "Fetch jobs (public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/jobs?page=1&size=10&sort=createdAt,desc&filter=active : true and employmentType in ['FULL_TIME'] and workMode in ['REMOTE','HYBRID']&filter=salary >: 10000000 and salary <: 20000000",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "jobs"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "createdAt,desc"
+                                },
+                                {
+                                    "key": "filter",
+                                    "value": "active : true and employmentType in ['FULL_TIME'] and workMode in ['REMOTE','HYBRID']",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "filter",
+                                    "value": "salary >: 10000000 and salary <: 20000000",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Filters use spring-filter syntax. New fields: employmentType (FULL_TIME|PART_TIME|CONTRACT|INTERNSHIP), workMode (ONSITE|REMOTE|HYBRID). Salary overlap filter: (salary > 0 or salaryMax > 0) and salary <: 50000000 and (salaryMax is null or salaryMax >: 20000000). Send sort=pinnedUntil,desc first (then your own sort) to list pinned jobs on top; posts of companies that are not approved are not listed."
+                    }
+                },
+                {
+                    "name": "Fetch job by id (public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/jobs/{{jobId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "jobs",
+                                "{{jobId}}"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                },
+                {
+                    "name": "Create job",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/jobs",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "jobs"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Kỹ sư phần mềm Backend (Java)\",\n  \"location\": \"HOCHIMINH\",\n  \"salary\": 20000000,\n  \"quantity\": 2,\n  \"level\": \"MIDDLE\",\n  \"employmentType\": \"FULL_TIME\",\n  \"workMode\": \"HYBRID\",\n  \"description\": \"<p>Mô tả công việc</p><h3>Yêu cầu</h3><ul><li>Java, Spring Boot</li></ul>\",\n  \"startDate\": \"2026-10-01T00:00:00Z\",\n  \"endDate\": \"2026-11-30T00:00:00Z\",\n  \"active\": true,\n  \"company\": {\n    \"id\": \"{{companyId}}\"\n  },\n  \"skills\": [\n    {\n      \"id\": 1\n    }\n  ],\n  \"salaryMax\": 30000000\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "salary is the monthly minimum in VND and salaryMax the maximum (optional; 0 or null = not given). salary 0 with no salaryMax means \"thỏa thuận\". 400 if salaryMax < salary or either is negative. An employer cannot have more open jobs than their places (3 free plus job packs): 403 with the count. pinnedUntil in the body is ignored; only a paid pin sets it."
+                    }
+                },
+                {
+                    "name": "Update job",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/jobs",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "jobs"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": \"{{jobId}}\",\n  \"name\": \"Kỹ sư phần mềm Backend (Java)\",\n  \"location\": \"HOCHIMINH\",\n  \"salary\": 20000000,\n  \"quantity\": 2,\n  \"level\": \"MIDDLE\",\n  \"employmentType\": \"FULL_TIME\",\n  \"workMode\": \"HYBRID\",\n  \"description\": \"<p>Mô tả công việc</p><h3>Yêu cầu</h3><ul><li>Java, Spring Boot</li></ul>\",\n  \"startDate\": \"2026-10-01T00:00:00Z\",\n  \"endDate\": \"2026-11-30T00:00:00Z\",\n  \"active\": true,\n  \"company\": {\n    \"id\": \"{{companyId}}\"\n  },\n  \"skills\": [\n    {\n      \"id\": 1\n    }\n  ],\n  \"salaryMax\": 30000000\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "salary is the monthly minimum in VND and salaryMax the maximum (optional; 0 or null = not given). salary 0 with no salaryMax means \"thỏa thuận\". 400 if salaryMax < salary or either is negative."
+                    }
+                },
+                {
+                    "name": "Delete job",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/jobs/{{jobId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "jobs",
+                                "{{jobId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Admin: lock a job post",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/jobs/{{jobId}}/lock",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "jobs",
+                                "{{jobId}}",
+                                "lock"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"reason\": \"Yêu cầu đóng phí hồ sơ\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "SUPER_ADMIN. reason is required (max 500). A locked post is hidden from the public (404), takes no applications and is left out of the digest; admins and the owning company still see it with the reason."
+                    }
+                },
+                {
+                    "name": "Admin: unlock a job post",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/jobs/{{jobId}}/unlock",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "jobs",
+                                "{{jobId}}",
+                                "unlock"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Companies",
+            "item": [
+                {
+                    "name": "Fetch companies (public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies?page=1&size=10&sort=createdAt,desc",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "createdAt,desc"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                },
+                {
+                    "name": "Fetch company by id (public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies/{{companyId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies",
+                                "{{companyId}}"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                },
+                {
+                    "name": "Create company",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Công ty mẫu\",\n  \"address\": \"Hà Nội\",\n  \"description\": \"<p>Giới thiệu</p>\",\n  \"logo\": \"\",\n  \"banner\": \"1790000000000-banner.png\",\n  \"website\": \"https://congty.example.com\",\n  \"companyType\": \"PRODUCT\",\n  \"mapEmbedUrl\": \"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724\",\n  \"facebookUrl\": \"https://www.facebook.com/congty\",\n  \"linkedinUrl\": \"https://www.linkedin.com/company/congty\",\n  \"twitterUrl\": \"https://x.com/congty\",\n  \"pinterestUrl\": \"\",\n  \"instagramUrl\": \"https://www.instagram.com/congty\",\n  \"youtubeUrl\": \"https://www.youtube.com/@congty\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Optional profile fields: companyType PRODUCT | OUTSOURCE; website must be http(s); mapEmbedUrl must be a Google Maps EMBED url (https://www.google.com/maps/embed?... or https://maps.google.com/maps?...&output=embed); each social link must be https on its own network's domain. Blank values are stored as null. HR may only update their own company."
+                    }
+                },
+                {
+                    "name": "Update company",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": \"{{companyId}}\",\n  \"name\": \"Công ty mẫu\",\n  \"address\": \"Hà Nội\",\n  \"description\": \"<p>Giới thiệu</p>\",\n  \"logo\": \"\",\n  \"banner\": \"1790000000000-banner.png\",\n  \"website\": \"https://congty.example.com\",\n  \"companyType\": \"PRODUCT\",\n  \"mapEmbedUrl\": \"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724\",\n  \"facebookUrl\": \"https://www.facebook.com/congty\",\n  \"linkedinUrl\": \"https://www.linkedin.com/company/congty\",\n  \"twitterUrl\": \"https://x.com/congty\",\n  \"pinterestUrl\": \"\",\n  \"instagramUrl\": \"https://www.instagram.com/congty\",\n  \"youtubeUrl\": \"https://www.youtube.com/@congty\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Optional profile fields: companyType PRODUCT | OUTSOURCE; website must be http(s); mapEmbedUrl must be a Google Maps EMBED url (https://www.google.com/maps/embed?... or https://maps.google.com/maps?...&output=embed); each social link must be https on its own network's domain. Blank values are stored as null. HR may only update their own company."
+                    }
+                },
+                {
+                    "name": "Approve company",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies/{{companyId}}/approve",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies",
+                                "{{companyId}}",
+                                "approve"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN only. Lets the employer of that company post jobs. To reject, delete the company instead. Refused (400, with the list) while the employer email is unverified, the tax code is missing or duplicated, or no licence was uploaded. See \"Company verification checklist\"."
+                    }
+                },
+                {
+                    "name": "Admin: reject a company (with reason)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies/1/reject",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies",
+                                "1",
+                                "reject"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN only. A rejected company stays hidden, keeps the reason, and the employer sees it on their account. Saving the company profile as that employer sends it back to review (pending); approving clears the rejection.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"reason\": \"Chưa có giấy phép kinh doanh\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Delete company",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies/{{companyId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies",
+                                "{{companyId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Company verification checklist",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies/{{companyId}}/verification",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies",
+                                "{{companyId}}",
+                                "verification"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN or an employer of that company (403 otherwise). Tax code, phone, website, the employer accounts (email verified, free mail, same domain as the website) and a checklist with a score. Required checks must pass before approve works."
+                    }
+                },
+                {
+                    "name": "Company business licence (file)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies/{{companyId}}/license",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies",
+                                "{{companyId}}",
+                                "license"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN or an employer of that company. Streams the licence the employer uploaded with POST /files folder=company-doc (PDF or image); it has no public URL."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Reviews",
+            "item": [
+                {
+                    "name": "Company reviews + rating summary (public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies/{{companyId}}/reviews?page=1&size=5",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies",
+                                "{{companyId}}",
+                                "reviews"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "5"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Returns average, total, distribution {5..1}, meta and result."
+                    }
+                },
+                {
+                    "name": "My review of a company",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/reviews/{{companyId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "reviews",
+                                "{{companyId}}"
+                            ]
+                        },
+                        "description": "data is null when you have not reviewed it."
+                    }
+                },
+                {
+                    "name": "Create or update my review",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/reviews/{{companyId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "reviews",
+                                "{{companyId}}"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"rating\": 5,\n  \"content\": \"Quy trình phỏng vấn rõ ràng, đồng nghiệp thân thiện.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "One review per user per company; calling again updates it. rating 1–5, content ≤ 1000 chars."
+                    }
+                },
+                {
+                    "name": "Delete my review",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/reviews/{{companyId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "reviews",
+                                "{{companyId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Admin: fetch all reviews",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reviews?page=1&size=10&sort=updatedAt,desc&filter=rating : 1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reviews"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "updatedAt,desc"
+                                },
+                                {
+                                    "key": "filter",
+                                    "value": "rating : 1",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "description": "Requires REVIEWS permission (granted to SUPER_ADMIN on startup)."
+                    }
+                },
+                {
+                    "name": "Admin: delete review",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reviews/{{reviewId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reviews",
+                                "{{reviewId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Admin: create review",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reviews",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reviews"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": 1,\n  \"companyId\": \"{{companyId}}\",\n  \"rating\": 5,\n  \"content\": \"Môi trường làm việc tốt.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Needs the REVIEWS/POST permission. One review per user per company."
+                    }
+                },
+                {
+                    "name": "Admin: update review",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reviews",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reviews"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": \"{{reviewId}}\",\n  \"userId\": 1,\n  \"companyId\": \"{{companyId}}\",\n  \"rating\": 4,\n  \"content\": \"Nội dung đã chỉnh sửa.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Updates rating and content of an existing review (user and company cannot change)."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Saved jobs",
+            "item": [
+                {
+                    "name": "My saved jobs",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/saved-jobs",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "saved-jobs"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Save a job",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/saved-jobs/{{jobId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "saved-jobs",
+                                "{{jobId}}"
+                            ]
+                        },
+                        "description": "Idempotent. 403 once you hold as many saved jobs as your plan allows (free: 20)."
+                    }
+                },
+                {
+                    "name": "Remove a saved job",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/saved-jobs/{{jobId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "saved-jobs",
+                                "{{jobId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Admin: fetch all saved jobs",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/saved-jobs?page=1&size=10&sort=createdAt,desc",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "saved-jobs"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "createdAt,desc"
+                                }
+                            ]
+                        },
+                        "description": "Needs the SAVED_JOBS/GET permission. Filter by user.name, job.name or job.company.name."
+                    }
+                },
+                {
+                    "name": "Admin: add a saved job",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/saved-jobs",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "saved-jobs"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"userId\": 1,\n  \"jobId\": \"{{jobId}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Saves a job on behalf of a user. Duplicate pairs are rejected."
+                    }
+                },
+                {
+                    "name": "Admin: delete a saved job",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/saved-jobs/{{savedJobId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "saved-jobs",
+                                "{{savedJobId}}"
+                            ]
+                        },
+                        "description": "Deletes by saved-job record id (not job id)."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Followed companies",
+            "item": [
+                {
+                    "name": "My followed companies",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/followed-companies",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "followed-companies"
+                            ]
+                        },
+                        "description": "Only approved companies; newest follow first."
+                    }
+                },
+                {
+                    "name": "Follow a company",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/followed-companies/{{companyId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "followed-companies",
+                                "{{companyId}}"
+                            ]
+                        },
+                        "description": "Idempotent. 404 for an unknown or unapproved company."
+                    }
+                },
+                {
+                    "name": "Unfollow a company",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/followed-companies/{{companyId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "followed-companies",
+                                "{{companyId}}"
+                            ]
+                        },
+                        "description": "Idempotent."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Job reports",
+            "item": [
+                {
+                    "name": "Report a job post",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/job-reports",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "job-reports"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"jobId\": \"{{jobId}}\",\n  \"reason\": \"SCAM\",\n  \"detail\": \"Yêu cầu đóng phí hồ sơ\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Any signed-in user. reason: SCAM | MISLEADING | DUPLICATE | EXPIRED | INAPPROPRIATE | OTHER. detail is optional (max 1000). 409 if you already reported this job."
+                    }
+                },
+                {
+                    "name": "Admin: fetch job reports",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/job-reports?page=1&size=10&sort=createdAt,desc&filter=reason : 'SCAM'",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "job-reports"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "createdAt,desc"
+                                },
+                                {
+                                    "key": "filter",
+                                    "value": "reason : 'SCAM'"
+                                }
+                            ]
+                        },
+                        "description": "SUPER_ADMIN only (permission JOB_REPORTS)."
+                    }
+                },
+                {
+                    "name": "Admin: dismiss a report",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/job-reports/{{reportId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "job-reports",
+                                "{{reportId}}"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN. Deletes the report; its author may report the post again."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "My profile",
+            "item": [
+                {
+                    "name": "Get my profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "profile"
+                            ]
+                        },
+                        "description": "Signed-in user. Returns an empty profile (with name, email, avatar) if none saved yet."
+                    }
+                },
+                {
+                    "name": "Save my profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "profile"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Nguyễn Minh Anh\",\n  \"avatar\": \"\",\n  \"headline\": \"Frontend Developer\",\n  \"experience\": \"Y1_3\",\n  \"level\": \"JUNIOR\",\n  \"industry\": \"Phần mềm & Dịch vụ CNTT\",\n  \"occupation\": \"Lập trình Frontend\",\n  \"jobAlert\": true,\n  \"shortGoals\": [\n    \"Thành thạo React và TypeScript\"\n  ],\n  \"longGoals\": [\n    \"Trở thành Tech Lead\"\n  ],\n  \"experiences\": [\n    {\n      \"company\": \"ACME Software\",\n      \"title\": \"Thực tập sinh Frontend\",\n      \"fromMonth\": \"2023-05\",\n      \"toMonth\": \"2023-08\",\n      \"current\": false,\n      \"description\": \"Xây dựng giao diện với React.\"\n    }\n  ],\n  \"skills\": [\n    {\n      \"name\": \"React\",\n      \"level\": 4\n    },\n    {\n      \"name\": \"Giao tiếp tiếng Anh\",\n      \"level\": 3\n    }\n  ],\n  \"references\": [\n    {\n      \"name\": \"Nguyễn Văn B\",\n      \"title\": \"Engineering Manager\",\n      \"company\": \"ACME Software\",\n      \"phone\": \"0900000000\",\n      \"email\": \"b@acme.example.com\"\n    }\n  ],\n  \"cvUrl\": \"\",\n  \"cvName\": \"\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Replaces the whole profile. experience: NONE | LT1 | Y1_3 | Y3_5 | GT5. level: INTERN | FRESHER | JUNIOR | MIDDLE | SENIOR. Months are \"YYYY-MM\". skill level 1-5. Limits: 10 goals each, 20 experiences, 30 skills, 5 references. avatar / cvUrl are fileName values from \"Files\"; blank removes them."
+                    }
+                },
+                {
+                    "name": "Open my profile CV",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/profile/cv",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "profile",
+                                "cv"
+                            ]
+                        },
+                        "description": "Streams the CV saved in my own profile. 400 if none is saved."
+                    }
+                },
+                {
+                    "name": "Change my avatar",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/profile/avatar",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "profile",
+                                "avatar"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"avatar\": \"file-name-from-upload-avatar.png\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Any signed-in account (also employers and admins). Upload the picture first with \"Files / Upload avatar\" and send the stored file name; an empty string removes the photo."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Skills",
+            "item": [
+                {
+                    "name": "Fetch skills (public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/skills?page=1&size=100&sort=name,asc",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "skills"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "100"
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "name,asc"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                },
+                {
+                    "name": "Create skill",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/skills",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "skills"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Kotlin\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Update skill",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/skills",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "skills"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": 1,\n  \"name\": \"Kotlin\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Delete skill",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/skills/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "skills",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Resumes",
+            "item": [
+                {
+                    "name": "Apply (create resume)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/resumes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "resumes"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"url\": \"1790000000000-u2-cv.pdf\",\n  \"job\": {\n    \"id\": \"{{jobId}}\"\n  },\n  \"coverLetter\": \"Xin chào, tôi rất quan tâm đến vị trí này.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Any signed-in user. url is either a CV file you uploaded yourself (PDF, Word, ODT, RTF or image) (POST /files, folder=resume; the stored name carries your user id) or an https Google Drive / Dropbox / OneDrive link. coverLetter is optional (max 3000). The server ignores user/email/status in the body. 409 if you already applied; 400 if the job is inactive or past its end date or the CV source is not allowed. Employer accounts get 403. The job must be active, already started (startDate) and not past its end date."
+                    }
+                },
+                {
+                    "name": "Check if I already applied",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/resumes/check-applied?jobId={{jobId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "resumes",
+                                "check-applied"
+                            ],
+                            "query": [
+                                {
+                                    "key": "jobId",
+                                    "value": "{{jobId}}"
+                                }
+                            ]
+                        },
+                        "description": "Signed-in candidate. Returns {\"applied\": true|false}. Applying twice to the same job gives 409; a closed or expired job gives 400."
+                    }
+                },
+                {
+                    "name": "My applications",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/resumes/by-user",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "resumes",
+                                "by-user"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Fetch resumes",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/resumes?page=1&size=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "resumes"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Fetch resume by id",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/resumes/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "resumes",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Open resume document (CV)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/resumes/{{resumeId}}/document",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "resumes",
+                                "{{resumeId}}",
+                                "document"
+                            ]
+                        },
+                        "description": "Streams the CV with the type of the stored file (PDF and images inline, Word/ODT/RTF as an attachment). Allowed for the applicant, an employer of the job's company, or SUPER_ADMIN; anyone else gets 403, no token gets 401. CV files have no public URL."
+                    }
+                },
+                {
+                    "name": "Update resume status (pipeline)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/resumes/{{resumeId}}/status",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "resumes",
+                                "{{resumeId}}",
+                                "status"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"status\": \"INTERVIEW\",\n  \"interviewAt\": \"2030-01-15T09:00:00.000Z\",\n  \"meetingLink\": \"https://meet.google.com/abc-defg-hij\",\n  \"decisionNote\": \"\",\n  \"notify\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Employer of the job's company or SUPER_ADMIN. PENDING -> REVIEWING | SHORTLISTED | REJECTED; REVIEWING -> SHORTLISTED | REJECTED; SHORTLISTED -> INTERVIEW | REJECTED; INTERVIEW -> ACCEPTED | REJECTED. INTERVIEW needs a future interviewAt and an https meetingLink. notify=false skips the candidate e-mail. 400 on a forbidden transition; ACCEPTED/REJECTED are final for employers."
+                    }
+                },
+                {
+                    "name": "Score an applicant (1-10)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/resumes/{{resumeId}}/evaluation",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "resumes",
+                                "{{resumeId}}",
+                                "evaluation"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"score\": 8,\n  \"remark\": \"Nền tảng tốt, cần kiểm tra thêm về hệ thống.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Employer of the job's company or SUPER_ADMIN. score 1-10 is required; remark is optional (max 2000 chars). Never visible to the candidate."
+                    }
+                },
+                {
+                    "name": "Delete resume",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/resumes/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "resumes",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update resume status (legacy)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/resumes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "resumes"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": 1,\n  \"status\": \"REVIEWING\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Old endpoint kept for compatibility: same pipeline rules as PUT /resumes/{id}/status but never e-mails the candidate."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Files",
+            "item": [
+                {
+                    "name": "Upload file",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/files",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "files"
+                            ]
+                        },
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "folder",
+                                    "value": "resume",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "description": "folder: resume (pdf, doc, docx, odt, rtf, jpg, jpeg, png, webp) | company (jpg/jpeg/png/webp, public) | company-doc (pdf, jpg, jpeg, png, webp; business licence, private, employers only) | avatar (jpg/jpeg/png/webp only). The first bytes of the file are checked against its extension. Max 5 MB (413 above). Returns the stored fileName. Logos and avatars are public at /storage/company/<file> and /storage/avatar/<file>; CVs are never public, open them through \"Resumes / Open resume document (CV)\". Needs hoidanit.upload-file.base-uri (env UPLOAD_BASE_URI) pointing at a local folder."
+                    }
+                },
+                {
+                    "name": "Upload avatar",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/files",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "files"
+                            ]
+                        },
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "folder",
+                                    "value": "avatar",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "description": "Images only (jpg, jpeg, png, webp). The UI limits it to 2 MB."
+                    }
+                },
+                {
+                    "name": "Download file",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/files?fileName=example.pdf&folder=resume",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "files"
+                            ],
+                            "query": [
+                                {
+                                    "key": "fileName",
+                                    "value": "example.pdf"
+                                },
+                                {
+                                    "key": "folder",
+                                    "value": "resume"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Fetch users",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users?page=1&size=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Fetch user by id",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create user",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Nhân viên HR\",\n  \"email\": \"hr@example.com\",\n  \"password\": \"123456\",\n  \"gender\": \"MALE\",\n  \"address\": \"Hà Nội\",\n  \"age\": 28,\n  \"role\": {\n    \"id\": 1\n  }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Update user",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": 1,\n  \"name\": \"Nhân viên HR\",\n  \"gender\": \"MALE\",\n  \"address\": \"Hà Nội\",\n  \"age\": 28\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Admin: lock a user account",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/1/lock",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "1",
+                                "lock"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN only (permission USERS). The account cannot sign in, its refresh token is dropped and any token it already holds is refused (401). An admin account or your own cannot be locked (409)."
+                    }
+                },
+                {
+                    "name": "Admin: unlock a user account",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/1/unlock",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "1",
+                                "unlock"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN only (permission USERS)."
+                    }
+                },
+                {
+                    "name": "Delete user",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Roles & permissions",
+            "item": [
+                {
+                    "name": "Fetch roles",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/roles?page=1&size=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "roles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create role",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/roles",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "roles"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"HR\",\n  \"description\": \"Nhà tuyển dụng\",\n  \"active\": true,\n  \"permissions\": [\n    {\n      \"id\": 1\n    }\n  ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Update role",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/roles",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "roles"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": 1,\n  \"name\": \"SUPER_ADMIN\",\n  \"description\": \"Admin\",\n  \"active\": true,\n  \"permissions\": [\n    {\n      \"id\": 1\n    }\n  ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Delete role",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/roles/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "roles",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Fetch permissions",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/permissions?page=1&size=100",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "permissions"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "100"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create permission",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/permissions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "permissions"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Get reviews with pagination\",\n  \"apiPath\": \"/api/v1/reviews\",\n  \"method\": \"GET\",\n  \"module\": \"REVIEWS\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Delete permission",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/permissions/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "permissions",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get role by id",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/roles/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "roles",
+                                "1"
+                            ]
+                        },
+                        "description": "Role with its permissions."
+                    }
+                },
+                {
+                    "name": "Update permission",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/permissions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "permissions"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": 1,\n  \"name\": \"Create a company\",\n  \"apiPath\": \"/api/v1/companies\",\n  \"method\": \"POST\",\n  \"module\": \"COMPANIES\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "SUPER_ADMIN. The (apiPath, method) pair must stay unique."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Subscribers",
+            "item": [
+                {
+                    "name": "My subscribed skills",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/subscribers/skills",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "subscribers",
+                                "skills"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Subscribe",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/subscribers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "subscribers"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@gmail.com\",\n  \"name\": \"Admin\",\n  \"skills\": [\n    {\n      \"id\": 1\n    }\n  ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Signed-in users only; the e-mail is always forced to your own address. A user may only edit their own subscription (PUT /subscribers); turning off the alert switch in the profile deletes it."
+                    }
+                },
+                {
+                    "name": "Update subscription",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/subscribers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "subscribers"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": 1,\n  \"email\": \"admin@gmail.com\",\n  \"name\": \"Admin\",\n  \"skills\": [\n    {\n      \"id\": 1\n    },\n    {\n      \"id\": 2\n    }\n  ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Admin: fetch subscribers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/subscribers?page=1&size=10&sort=createdAt,desc",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "subscribers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "createdAt,desc"
+                                }
+                            ]
+                        },
+                        "description": "Needs the SUBSCRIBERS/GET permission."
+                    }
+                },
+                {
+                    "name": "Admin: get subscriber by id",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/subscribers/{{subscriberId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "subscribers",
+                                "{{subscriberId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Admin: update subscriber by id",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/subscribers/{{subscriberId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "subscribers",
+                                "{{subscriberId}}"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Nguyễn Văn A\",\n  \"email\": \"a@example.com\",\n  \"skills\": [\n    {\n      \"id\": 1\n    },\n    {\n      \"id\": 2\n    }\n  ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Updates name, email and skills. Email must stay unique."
+                    }
+                },
+                {
+                    "name": "Admin: delete subscriber",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/subscribers/{{subscriberId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "subscribers",
+                                "{{subscriberId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Admin: send the job alert digest now",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/subscribers/send-digest",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "subscribers",
+                                "send-digest"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN. Runs the same job the Monday 08:00 (Vietnam time) schedule runs; returns the number of e-mails queued. JOB_ALERT_CRON=- switches the schedule off."
+                    }
+                },
+                {
+                    "name": "Unsubscribe (link in the digest)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/subscribers/unsubscribe?token=token-from-the-email",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "subscribers",
+                                "unsubscribe"
+                            ],
+                            "query": [
+                                {
+                                    "key": "token",
+                                    "value": "token-from-the-email"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Public one-click unsubscribe used by the \"Hủy nhận bản tin\" link and the List-Unsubscribe header of the weekly digest. 400 for a tampered token; repeating it is harmless."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Premium plans & payments",
+            "item": [
+                {
+                    "name": "List plans (public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/plans",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "plans"
+                            ]
+                        },
+                        "description": "BASIC 49.000đ / STANDARD 99.000đ / PREMIUM 149.000đ, each a one-time 30-day pass."
+                    }
+                },
+                {
+                    "name": "My plan and usage",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/plan",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "plan"
+                            ]
+                        },
+                        "description": "plan is null on the free tier. Includes limits and how much of them is used."
+                    }
+                },
+                {
+                    "name": "Payment methods (public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/methods",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "methods"
+                            ]
+                        },
+                        "description": "Lists the six payment methods with an `available` flag (MoMo/ZaloPay are false unless PAYMENT_MOCK=true)."
+                    }
+                },
+                {
+                    "name": "My orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/orders",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "orders"
+                            ]
+                        },
+                        "description": "Newest first. A payment started but not finished within 15 minutes reads EXPIRED."
+                    }
+                },
+                {
+                    "name": "Create an order (starts a payment)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/orders",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "orders"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"plan\": \"STANDARD\",\n  \"method\": \"VNPAY\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "method (optional, default VNPAY): MOMO, VNPAY, VIETQR, ZALOPAY, BANK or CARD. VNPAY/VIETQR/BANK/CARD go through VNPay (bank code is pre-selected); MOMO and ZALOPAY are only accepted when PAYMENT_MOCK=true. Unsupported method -> 400."
+                    }
+                },
+                {
+                    "name": "VNPay return (browser)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/vnpay-return?vnp_TxnRef=…&vnp_Amount=…&vnp_ResponseCode=00&vnp_TransactionStatus=00&vnp_SecureHash=…",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "vnpay-return"
+                            ],
+                            "query": [
+                                {
+                                    "key": "vnp_TxnRef",
+                                    "value": "…"
+                                },
+                                {
+                                    "key": "vnp_Amount",
+                                    "value": "…"
+                                },
+                                {
+                                    "key": "vnp_ResponseCode",
+                                    "value": "00"
+                                },
+                                {
+                                    "key": "vnp_TransactionStatus",
+                                    "value": "00"
+                                },
+                                {
+                                    "key": "vnp_SecureHash",
+                                    "value": "…"
+                                }
+                            ]
+                        },
+                        "description": "Public; the HMAC-SHA512 signature is the credential. Settles the order idempotently. 400 for a bad signature or amount, 404 for an unknown order."
+                    }
+                },
+                {
+                    "name": "VNPay IPN (server to server)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/vnpay-ipn?vnp_TxnRef=…&vnp_SecureHash=…",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "vnpay-ipn"
+                            ],
+                            "query": [
+                                {
+                                    "key": "vnp_TxnRef",
+                                    "value": "…"
+                                },
+                                {
+                                    "key": "vnp_SecureHash",
+                                    "value": "…"
+                                }
+                            ]
+                        },
+                        "description": "Answers VNPay's own body: {\"RspCode\":\"00\",\"Message\":\"Confirm Success\"}; 01 order not found, 02 already confirmed, 04 invalid amount, 97 invalid signature."
+                    }
+                },
+                {
+                    "name": "Dev: fake gateway order info",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/mock/order?txnRef=…",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "mock",
+                                "order"
+                            ],
+                            "query": [
+                                {
+                                    "key": "txnRef",
+                                    "value": "…"
+                                }
+                            ]
+                        },
+                        "description": "Only when PAYMENT_MOCK=true, otherwise 404."
+                    }
+                },
+                {
+                    "name": "Dev: finish a fake payment",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/mock/complete",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "mock",
+                                "complete"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"txnRef\": \"…\",\n  \"success\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Only when PAYMENT_MOCK=true. Returns the signed return URL to open."
+                    }
+                },
+                {
+                    "name": "Admin: order ledger",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/orders?page=1&size=10&sort=createdAt,desc&filter=status : 'PAID'",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "orders"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "createdAt,desc"
+                                },
+                                {
+                                    "key": "filter",
+                                    "value": "status : 'PAID'"
+                                }
+                            ]
+                        },
+                        "description": "SUPER_ADMIN only (permission ORDERS)."
+                    }
+                },
+                {
+                    "name": "Admin: platform statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/stats",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "stats"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN only (permission STATS). Users (candidate/employer split, active Premium passes), companies, jobs (open/locked/reports), applications, revenue (total, last 30 days, per plan) and a 6-month series of signups, applications and revenue in Vietnam time."
+                    }
+                },
+                {
+                    "name": "ZaloPay result (after redirect)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/orders/zalopay-result?txnRef=…",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "orders",
+                                "zalopay-result"
+                            ],
+                            "query": [
+                                {
+                                    "key": "txnRef",
+                                    "value": "…"
+                                }
+                            ]
+                        },
+                        "description": "Signed-in owner of the order. Asks ZaloPay for the order status and settles it; the site calls this when the browser comes back from ZaloPay."
+                    }
+                },
+                {
+                    "name": "MoMo result (after redirect)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/orders/momo-result?txnRef=…",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "orders",
+                                "momo-result"
+                            ],
+                            "query": [
+                                {
+                                    "key": "txnRef",
+                                    "value": "…"
+                                }
+                            ]
+                        },
+                        "description": "Signed-in owner of the order. Asks MoMo for the order status and settles it; the site calls this when the browser comes back from MoMo."
+                    }
+                },
+                {
+                    "name": "Employer services (my company)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/employer/services",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "employer",
+                                "services"
+                            ]
+                        },
+                        "description": "Employer accounts only (403 otherwise). Open jobs against the limit (3 free places plus running job packs), the talent unlock end date, pinned jobs, the products on sale with prices, and the last 20 orders of the company."
+                    }
+                },
+                {
+                    "name": "Buy an employer service",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/employer/orders",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "employer",
+                                "orders"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"product\": \"JOB_PIN_7\",\n  \"jobId\": \"{{jobId}}\",\n  \"method\": \"VNPAY\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Approved company, accepted terms. product: JOB_PIN_7 | JOB_PIN_30 (jobId required: an open job of the company), JOB_SLOTS_5 (5 more open jobs for 30 days; packs run side by side), TALENT_30 (profile details and CVs in the talent directory for 30 days; buying again continues from the end). Same gateways and mock gateway as the candidate plans; the browser comes back to /admin/dich-vu."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Talent directory",
+            "item": [
+                {
+                    "name": "Search candidates (approved employer / SUPER_ADMIN)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/talents?keyword=java&level=JUNIOR&skills=Java,Spring&page=1&size=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "talents"
+                            ],
+                            "query": [
+                                {
+                                    "key": "keyword",
+                                    "value": "java"
+                                },
+                                {
+                                    "key": "level",
+                                    "value": "JUNIOR"
+                                },
+                                {
+                                    "key": "skills",
+                                    "value": "Java,Spring"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        },
+                        "description": "Only candidates who switched on 'visibleToEmployers' in their profile. Plain parameters only: keyword, level (INTERN..SENIOR), experience (NONE|LT1|Y1_3|Y3_5|GT5), industry, occupation, skills (comma separated, all required), page, size (max 50). No e-mail, goals or references in the list."
+                    }
+                },
+                {
+                    "name": "Candidate detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/talents/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "talents",
+                                "1"
+                            ]
+                        },
+                        "description": "E-mail, goals, work history, skills and CV name. References are never returned. 404 when the candidate opted out or the account is locked; 403 for a company that is not approved."
+                    }
+                },
+                {
+                    "name": "Stream a candidate CV",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/talents/1/cv",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "talents",
+                                "1",
+                                "cv"
+                            ]
+                        },
+                        "description": "CV file of an opted-in candidate, same rules as the detail."
+                    }
+                }
+            ]
+        }
+    ]
+}

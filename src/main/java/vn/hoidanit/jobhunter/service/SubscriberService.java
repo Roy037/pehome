@@ -1,6 +1,10 @@
 package vn.hoidanit.jobhunter.service;
 
 import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -10,6 +14,7 @@ import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.Job;
 import vn.hoidanit.jobhunter.domain.Skill;
 import vn.hoidanit.jobhunter.domain.Subscriber;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.domain.response.email.ResEmailJob;
 import vn.hoidanit.jobhunter.repository.JobRepository;
 import vn.hoidanit.jobhunter.repository.SkillRepository;
@@ -21,30 +26,29 @@ public class SubscriberService {
     private final SubscriberRepository subscriberRepository;
     private final SkillRepository skillRepository;
     private final JobRepository jobRepository;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
+    private final UnsubscribeTokens unsubscribeTokens;
 
     public SubscriberService(
             SubscriberRepository subscriberRepository,
             SkillRepository skillRepository,
             JobRepository jobRepository,
-            EmailService emailService) {
+            NotificationService notificationService,
+            UnsubscribeTokens unsubscribeTokens) {
+        this.unsubscribeTokens = unsubscribeTokens;
         this.subscriberRepository = subscriberRepository;
         this.skillRepository = skillRepository;
         this.jobRepository = jobRepository;
-        this.emailService = emailService;
+        this.notificationService = notificationService;
 
     }
-
-    // @Scheduled(cron = "*/10 * * * * *")
-    // public void testCron() {
-    // System.out.println(">>> TEST CRON");
-    // }
 
     public boolean isExistsByEmail(String email) {
         return this.subscriberRepository.existsByEmail(email);
     }
 
     public Subscriber create(Subscriber subs) {
+        subs.setId(0); // a create never replaces an existing row, whatever id the request body carries
         // check skills
         if (subs.getSkills() != null) {
             List<Long> reqSkills = subs.getSkills()
@@ -55,7 +59,9 @@ public class SubscriberService {
             subs.setSkills(dbSkills);
         }
 
-        return this.subscriberRepository.save(subs);
+        subs = this.subscriberRepository.save(subs);
+        this.notificationService.newsletterJoined(subs);
+        return subs;
     }
 
     public Subscriber update(Subscriber subsDB, Subscriber subsRequest) {
@@ -69,6 +75,38 @@ public class SubscriberService {
             subsDB.setSkills(dbSkills);
         }
         return this.subscriberRepository.save(subsDB);
+    }
+
+    public ResultPaginationDTO fetchAll(Specification<Subscriber> spec, Pageable pageable) {
+        Page<Subscriber> page = this.subscriberRepository.findAll(spec, pageable);
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(page.getTotalPages());
+        meta.setTotal(page.getTotalElements());
+        rs.setMeta(meta);
+        rs.setResult(page.getContent());
+        return rs;
+    }
+
+    public Subscriber updateById(Subscriber subsDB, Subscriber req) {
+        subsDB.setName(req.getName());
+        subsDB.setEmail(req.getEmail());
+        return update(subsDB, req);
+    }
+
+    public void delete(long id) {
+        this.subscriberRepository.deleteById(id);
+    }
+
+    /** Signed link from an e-mail: removes the subscription. Already gone is fine (the link may be clicked twice). */
+    public void unsubscribe(String token) throws vn.hoidanit.jobhunter.util.error.IdInvalidException {
+        long id = this.unsubscribeTokens.parse(token)
+                .orElseThrow(() -> new vn.hoidanit.jobhunter.util.error.IdInvalidException("Liên kết hủy đăng ký không hợp lệ."));
+        if (this.subscriberRepository.existsById(id)) {
+            this.subscriberRepository.deleteById(id);
+        }
     }
 
     public Subscriber findById(long id) {

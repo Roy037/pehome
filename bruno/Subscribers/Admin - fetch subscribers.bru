@@ -1,0 +1,21 @@
+meta {
+  name: Admin: fetch subscribers
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/subscribers?page=1&size=10&sort=createdAt,desc
+  body: none
+  auth: inherit
+}
+
+params:query {
+  page: 1
+  size: 10
+  sort: createdAt,desc
+}
+
+docs {
+  Needs the SUBSCRIBERS/GET permission.
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${heading}">Cập nhật hồ sơ ứng tuyển</title>
+</head>
+<body style="margin:0;padding:0;background:#FFF7EF;font-family:Arial,Helvetica,sans-serif;color:#1F1A16;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7EF;padding:32px 12px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #EDE1D5;border-radius:12px;">
+                <tr th:replace="~{fragments :: logo}"></tr>
+                <tr><td style="padding:8px 32px 0;font-size:18px;font-weight:700;" th:text="${heading}">Tiêu đề</td></tr>
+                <tr>
+                    <td style="padding:12px 32px 0;font-size:14px;line-height:1.6;color:#3E3630;">
+                        Xin chào <strong th:text="${name}">bạn</strong>,<br>
+                        <span th:text="${intro}">Nội dung</span>
+                    </td>
+                </tr>
+                <tr th:if="${note != null}">
+                    <td style="padding:16px 32px 0;">
+                        <div style="padding:12px 16px;background:#FFF7EF;border-left:3px solid #E3763C;border-radius:6px;font-size:13.5px;line-height:1.6;color:#3E3630;">
+                            <strong>Lời nhắn từ nhà tuyển dụng:</strong><br>
+                            <span th:text="${note}" style="white-space:pre-line;">…</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:20px 32px 0;font-size:13px;color:#6B635C;">
+                        Vị trí: <strong th:text="${jobName}" style="color:#1F1A16;">Vị trí</strong> · <span th:text="${company}">Công ty</span>
+                    </td>
+                </tr>
+                <tr th:if="${jobs != null and !jobs.isEmpty()}">
+                    <td style="padding:22px 32px 0;">
+                        <div style="padding-top:18px;border-top:1px solid #EDE1D5;font-size:15px;font-weight:700;">Có thể bạn sẽ quan tâm</div>
+                        <div style="margin-top:2px;font-size:13px;color:#6B635C;">Các vị trí đang tuyển cùng kỹ năng với vị trí bạn đã ứng tuyển.</div>
+                    </td>
+                </tr>
+                <tr th:replace="~{fragments :: jobs(${jobs})}"></tr>
+                <tr>
+                    <td align="center" style="padding:22px 32px 28px;">
+                        <a th:href="${ctaUrl ?: jobUrl}" href="#" th:text="${ctaLabel ?: 'Xem tin tuyển dụng'}" style="display:inline-block;padding:11px 24px;background:#E3763C;color:#1F1409;font-weight:700;font-size:14px;text-decoration:none;border-radius:8px;">Xem tin tuyển dụng</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0 32px 24px;font-size:12px;line-height:1.6;color:#6B635C;">
+                        Bạn nhận được email này vì đã ứng tuyển trên itjobs. Theo dõi trạng thái hồ sơ bất cứ lúc nào trong mục “Hồ sơ đã ứng tuyển”.
+                    </td>
+                </tr>
+            </table>
+            <table th:replace="~{fragments :: footer}"></table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

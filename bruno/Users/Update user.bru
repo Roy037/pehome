@@ -1,0 +1,21 @@
+meta {
+  name: Update user
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/users
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 1,
+    "name": "Nhân viên HR",
+    "gender": "MALE",
+    "address": "Hà Nội",
+    "age": 28
+  }
+}

@@ -1,5 +1,10 @@
 package vn.hoidanit.jobhunter.service;
 
+import vn.hoidanit.jobhunter.repository.PlanOrderRepository;
+import vn.hoidanit.jobhunter.repository.ResumeRepository;
+import vn.hoidanit.jobhunter.util.error.ConflictException;
+import vn.hoidanit.jobhunter.util.error.ResourceNotFoundException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,12 +18,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.domain.Role;
 import vn.hoidanit.jobhunter.domain.User;
+import vn.hoidanit.jobhunter.domain.request.ReqEmployerRegisterDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.UserRepository;
+import vn.hoidanit.jobhunter.util.SecurityUtil;
+import vn.hoidanit.jobhunter.util.error.IdInvalidException;
+import vn.hoidanit.jobhunter.util.error.PermissionException;
 
 @Service
 public class UserService {
@@ -26,11 +36,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final CompanyService companyService;
     private final RoleService roleService;
+    private final ResumeRepository resumeRepository;
+    private final PlanOrderRepository orderRepository;
+    private final NotificationService notificationService;
 
     public UserService(
             UserRepository userRepository,
             CompanyService companyService,
-            RoleService roleService) {
+            RoleService roleService,
+            ResumeRepository resumeRepository,
+            PlanOrderRepository orderRepository,
+            NotificationService notificationService) {
+        this.notificationService = notificationService;
+        this.orderRepository = orderRepository;
+        this.resumeRepository = resumeRepository;
         this.userRepository = userRepository;
         this.companyService = companyService;
         this.roleService = roleService;
@@ -42,7 +61,52 @@ public class UserService {
     }
 
     public void handleDeleteUser(long id) {
+        if (this.orderRepository.existsByUserId(id)) {
+            throw new ConflictException("Không thể xóa người dùng đã có giao dịch thanh toán.");
+        }
+        if (this.resumeRepository.existsByUserId(id)) {
+            throw new ConflictException(
+                    "Không thể xóa người dùng đã có hồ sơ ứng tuyển. Hãy xóa các hồ sơ ứng tuyển của người dùng này trước.");
+        }
         this.userRepository.deleteById(id);
+    }
+
+    // Locking ends the session (the refresh token is dropped); an admin account can never be locked, so nobody is shut out of administration.
+    @Transactional
+    public User setLocked(long id, boolean locked, String actingEmail) {
+        User user = fetchUserById(id);
+        if (user == null) {
+            throw new ResourceNotFoundException("User với id = " + id + " không tồn tại");
+        }
+        if (locked) {
+            if (isSuperAdmin(user)) {
+                throw new ConflictException("Không thể khóa tài khoản quản trị viên.");
+            }
+            if (user.getEmail().equalsIgnoreCase(actingEmail)) {
+                throw new ConflictException("Không thể tự khóa tài khoản đang đăng nhập.");
+            }
+            user.setRefreshToken(null);
+        }
+        boolean changed = user.isLocked() != locked;
+        user.setLocked(locked);
+        user = this.userRepository.save(user);
+        if (changed) {
+            if (locked) {
+                this.notificationService.accountLocked(user);
+            } else {
+                this.notificationService.accountUnlocked(user);
+            }
+        }
+        return user;
+    }
+
+    /** The signed-in user chose a new password: every session is ended (the refresh token goes), and the owner is told by e-mail. */
+    @Transactional
+    public void changePassword(User user, String encodedPassword) {
+        user.setPassword(encodedPassword);
+        user.setRefreshToken(null);
+        this.userRepository.save(user);
+        this.notificationService.passwordChanged(user);
     }
 
     public boolean isEmailExist(String email) {
@@ -51,6 +115,81 @@ public class UserService {
 
     public User handleGetUserByUsername(String username) {
         return this.userRepository.findByEmail(username);
+    }
+
+    public User handleGetCurrentUser() throws IdInvalidException {
+        User user = this.userRepository.findByEmail(SecurityUtil.getCurrentUserLogin().orElse(""));
+        if (user == null) {
+            throw new IdInvalidException("Bạn cần đăng nhập để thực hiện thao tác này");
+        }
+        return user;
+    }
+
+    // Candidate-only actions (apply, save, follow, review) are closed to employer accounts, which are tied to a company.
+    public User currentCandidate() throws IdInvalidException, PermissionException {
+        User user = handleGetCurrentUser();
+        if (user.getCompany() != null) {
+            throw new PermissionException("Tài khoản nhà tuyển dụng không dùng được tính năng này.");
+        }
+        return user;
+    }
+
+    // Employer-only actions (buying services) are for accounts tied to a company.
+    public User currentEmployer() throws IdInvalidException, PermissionException {
+        User user = handleGetCurrentUser();
+        if (user.getCompany() == null) {
+            throw new PermissionException("Chỉ tài khoản nhà tuyển dụng mới dùng được tính năng này.");
+        }
+        return user;
+    }
+
+    public User currentUserOrNull() {
+        return this.userRepository.findByEmail(SecurityUtil.getCurrentUserLogin().orElse(""));
+    }
+
+    public static boolean isSuperAdmin(User user) {
+        return user != null && user.getRole() != null && "SUPER_ADMIN".equals(user.getRole().getName());
+    }
+
+    // Company of the signed-in user; null for admins and candidates, who are not company-scoped.
+    public Company currentUserCompany() {
+        User user = this.userRepository.findByEmail(SecurityUtil.getCurrentUserLogin().orElse(""));
+        return user == null ? null : user.getCompany();
+    }
+
+    @Transactional
+    public User createEmployer(ReqEmployerRegisterDTO req, String encodedPassword) throws IdInvalidException {
+        Role hr = this.roleService.fetchByName("HR");
+        if (hr == null) {
+            throw new IdInvalidException("Hệ thống chưa cấu hình vai trò nhà tuyển dụng");
+        }
+        Company company = new Company();
+        company.setName(req.getCompanyName().trim());
+        company.setAddress(req.getCompanyAddress().trim());
+        company.setTaxCode(req.getTaxCode().trim());
+        company.setPhone(req.getPhone().trim());
+        company.setWebsite(req.getWebsite());
+        company.setApproved(false);
+        company = this.companyService.handleCreateCompany(company);
+
+        User user = new User();
+        user.setName(req.getName().trim());
+        user.setEmail(req.getEmail().trim());
+        user.setPassword(encodedPassword);
+        user.setRole(hr);
+        user.setCompany(company);
+        user.setEmailVerified(false);
+        user.setTermsVersion(User.TERMS_VERSION);
+        user.setTermsAcceptedAt(Instant.now());
+        return this.userRepository.save(user);
+    }
+
+    /** An employer account that signed up before the terms existed (or before they changed) accepts the current version. */
+    @Transactional
+    public User acceptTerms(User user) {
+        user.setTermsVersion(User.TERMS_VERSION);
+        user.setTermsAcceptedAt(Instant.now());
+        return this.userRepository.save(user);
     }
 
     public User fetchUserById(long id) {
@@ -63,6 +202,7 @@ public class UserService {
     }
 
     public User handleCreateUser(User user) {
+        user.setId(0); // a create never replaces an existing row, whatever id the request body carries
         if (user.getCompany() != null) {
             Optional<Company> companyOptional = this.companyService.findById(user.getCompany().getId());
             user.setCompany(companyOptional.isPresent() ? companyOptional.get() : null);
@@ -94,7 +234,7 @@ public class UserService {
             // update
             if (reqUser.getRole() != null) {
                 Role r = this.roleService.fetchById(reqUser.getRole().getId());
-                reqUser.setRole(r != null ? r : null);
+                currentUser.setRole(r);
             }
             currentUser = this.userRepository.save(currentUser);
         }
@@ -164,6 +304,7 @@ public class UserService {
         res.setCreatedAt(user.getCreatedAt());
         res.setGender(user.getGender());
         res.setAddress(user.getAddress());
+        res.setLocked(user.isLocked());
         return res;
     }
 
@@ -187,12 +328,12 @@ public class UserService {
     public void updateUserToken(String token, String email) {
         User currentUser = this.handleGetUserByUsername(email);
         if (currentUser != null) {
-            currentUser.setRefreshToken(token);
+            currentUser.setRefreshToken(token == null ? null : SecurityUtil.sha256(token));
             this.userRepository.save(currentUser);
         }
     }
 
     public User getUserByRefreshTokenAndEmail(String token, String email) {
-        return this.userRepository.findByRefreshTokenAndEmail(token, email);
+        return this.userRepository.findByRefreshTokenAndEmail(SecurityUtil.sha256(token), email);
     }
 }

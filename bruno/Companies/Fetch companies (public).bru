@@ -1,0 +1,17 @@
+meta {
+  name: Fetch companies (public)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/companies?page=1&size=10&sort=createdAt,desc
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+  size: 10
+  sort: createdAt,desc
+}

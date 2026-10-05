@@ -1,0 +1,21 @@
+meta {
+  name: Admin: lock a job post
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/jobs/{{jobId}}/lock
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "reason": "Yêu cầu đóng phí hồ sơ"
+  }
+}
+
+docs {
+  SUPER_ADMIN. reason is required (max 500). A locked post is hidden from the public (404), takes no applications and is left out of the digest; admins and the owning company still see it with the reason.
+}

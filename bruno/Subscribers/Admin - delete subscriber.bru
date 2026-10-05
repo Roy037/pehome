@@ -1,0 +1,11 @@
+meta {
+  name: Admin: delete subscriber
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/subscribers/{{subscriberId}}
+  body: none
+  auth: inherit
+}

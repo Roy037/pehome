@@ -1,0 +1,23 @@
+meta {
+  name: VNPay return (browser)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/payments/vnpay-return?vnp_TxnRef=…&vnp_Amount=…&vnp_ResponseCode=00&vnp_TransactionStatus=00&vnp_SecureHash=…
+  body: none
+  auth: inherit
+}
+
+params:query {
+  vnp_TxnRef: …
+  vnp_Amount: …
+  vnp_ResponseCode: 00
+  vnp_TransactionStatus: 00
+  vnp_SecureHash: …
+}
+
+docs {
+  Public; the HMAC-SHA512 signature is the credential. Settles the order idempotently. 400 for a bad signature or amount, 404 for an unknown order.
+}
