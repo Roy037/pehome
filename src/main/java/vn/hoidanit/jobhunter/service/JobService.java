@@ -11,6 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+
 import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.domain.Job;
 import vn.hoidanit.jobhunter.domain.Skill;
@@ -219,14 +223,16 @@ public class JobService {
         this.jobRepository.deleteById(id);
     }
 
-    // A locked post is only visible to admins and to the company that owns it.
+    // A locked post, or a post of a company that is not approved yet, is only visible to admins and to the company
+    // that owns it.
     public boolean isVisible(Job job) {
-        if (!job.isLocked()) {
+        Company company = job.getCompany();
+        if (!job.isLocked() && (company == null || company.isApproved())) {
             return true;
         }
         User me = this.userService.currentUserOrNull();
         return UserService.isSuperAdmin(me)
-                || (me != null && me.getCompany() != null && job.getCompany() != null && me.getCompany().getId() == job.getCompany().getId());
+                || (me != null && me.getCompany() != null && company != null && me.getCompany().getId() == company.getId());
     }
 
     public Job lock(long id, String reason) {
@@ -255,9 +261,13 @@ public class JobService {
         User me = this.userService.currentUserOrNull();
         if (!UserService.isSuperAdmin(me)) {
             Long mine = me != null && me.getCompany() != null ? me.getCompany().getId() : null;
-            Specification<Job> visible = (root, query, cb) -> mine == null
-                    ? cb.isFalse(root.get("locked"))
-                    : cb.or(cb.isFalse(root.get("locked")), cb.equal(root.get("company").get("id"), mine));
+            // the public sees open posts of approved companies; an employer also sees every post of their own company
+            Specification<Job> visible = (root, query, cb) -> {
+                Join<Job, Company> company = root.join("company", JoinType.LEFT);
+                Predicate publicPost = cb.and(cb.isFalse(root.get("locked")),
+                        cb.or(cb.isNull(company.get("id")), cb.isTrue(company.get("approved"))));
+                return mine == null ? publicPost : cb.or(publicPost, cb.equal(company.get("id"), mine));
+            };
             spec = visible.and(spec);
         }
         Page<Job> pageUser = this.jobRepository.findAll(spec, pageable);

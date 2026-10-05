@@ -23,7 +23,7 @@ public interface JobRepository extends JpaRepository<Job, Long>,
 
     // Open postings that share at least one of the skills and were published after `since`, newest first.
     @Query("select distinct j from Job j join j.skills s where s in :skills and j.active = true and j.locked = false "
-            + "and (j.endDate is null or j.endDate > :now) and (j.startDate is null or j.startDate <= :now) "
+            + "and j.company.approved = true and (j.endDate is null or j.endDate > :now) and (j.startDate is null or j.startDate <= :now) "
             + "and j.createdAt >= :since order by j.createdAt desc")
     List<Job> findAlertJobs(@Param("skills") List<Skill> skills, @Param("now") Instant now,
             @Param("since") Instant since, Pageable pageable);

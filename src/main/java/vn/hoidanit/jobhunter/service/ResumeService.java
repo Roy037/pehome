@@ -297,6 +297,9 @@ public class ResumeService {
         if (job.isLocked()) {
             throw new IdInvalidException("Tin tuyển dụng này đang bị khóa.");
         }
+        if (job.getCompany() != null && !job.getCompany().isApproved()) {
+            throw new IdInvalidException("Công ty này đang chờ xác minh nên chưa nhận hồ sơ.");
+        }
         if (!job.isActive() || (job.getEndDate() != null && job.getEndDate().isBefore(Instant.now()))) {
             throw new IdInvalidException("Tin tuyển dụng này đã đóng hoặc hết hạn.");
         }
