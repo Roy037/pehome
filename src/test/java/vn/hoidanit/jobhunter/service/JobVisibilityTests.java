@@ -20,7 +20,8 @@ import vn.hoidanit.jobhunter.repository.SkillRepository;
 class JobVisibilityTests {
     private final UserService users = mock(UserService.class);
     private final JobService service = new JobService(mock(JobRepository.class), mock(SkillRepository.class),
-            mock(CompanyRepository.class), this.users, mock(ResumeRepository.class), mock(NotificationService.class));
+            mock(CompanyRepository.class), this.users, mock(ResumeRepository.class), mock(NotificationService.class),
+            mock(PlanService.class));
 
     private static Company company(long id, boolean approved) {
         Company company = new Company();

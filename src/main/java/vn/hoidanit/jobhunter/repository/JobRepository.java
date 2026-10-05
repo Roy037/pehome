@@ -2,6 +2,7 @@ package vn.hoidanit.jobhunter.repository;
 
 import java.util.List;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.domain.Pageable;
 import java.time.Instant;
@@ -9,6 +10,7 @@ import java.time.Instant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import vn.hoidanit.jobhunter.domain.Job;
 import vn.hoidanit.jobhunter.domain.Skill;
@@ -20,6 +22,28 @@ public interface JobRepository extends JpaRepository<Job, Long>,
     List<Job> findBySkillsIn(List<Skill> skills);
 
     boolean existsByCompanyId(long companyId);
+
+    // Jobs that count against a company's places for open jobs: switched on, not locked, not past the deadline.
+    @Query("select count(j) from Job j where j.company.id = :companyId and j.id <> :exceptId and j.active = true "
+            + "and j.locked = false and (j.endDate is null or j.endDate > :now)")
+    long countOpen(@Param("companyId") long companyId, @Param("exceptId") long exceptId, @Param("now") Instant now);
+
+    @Query("select j from Job j where j.company.id = :companyId and j.pinnedUntil > :now order by j.pinnedUntil")
+    List<Job> findPinned(@Param("companyId") long companyId, @Param("now") Instant now);
+
+    @Query("select j.pinnedUntil from Job j where j.id = :id")
+    Instant pinnedUntilOf(@Param("id") long id);
+
+    // updated directly: the paid order changes the pin without going through the entity (and its audit fields)
+    @Modifying
+    @Transactional
+    @Query("update Job j set j.pinnedUntil = :until where j.id = :id")
+    int pin(@Param("id") long id, @Param("until") Instant until);
+
+    @Modifying
+    @Transactional
+    @Query("update Job j set j.pinnedUntil = null where j.pinnedUntil <= :now")
+    int clearExpiredPins(@Param("now") Instant now);
 
     // Open postings that share at least one of the skills and were published after `since`, newest first.
     @Query("select distinct j from Job j join j.skills s where s in :skills and j.active = true and j.locked = false "

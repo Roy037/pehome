@@ -435,14 +435,25 @@ public class NotificationService {
 
     public void paymentReceipt(PlanOrder order) {
         User user = order.getUser();
+        boolean employer = order.getProduct() != null;
         Map<String, String> details = new LinkedHashMap<>();
-        details.put("Gói", order.getPlan().getLabel());
+        details.put(employer ? "Dịch vụ" : "Gói", employer ? order.itemLabel() : order.getPlan().getLabel());
         details.put("Số tiền", money(order.getAmount()));
         if (order.getMethod() != null) {
             details.put("Phương thức", order.getMethod().getLabel());
         }
         details.put("Mã đơn hàng", order.getTxnRef());
         details.put("Hiệu lực", DAY.format(order.getStartsAt()) + " – " + DAY.format(order.getEndsAt()));
+        if (employer) {
+            this.emailService.sendNotice(user.getEmail(), "Thanh toán thành công – " + order.itemLabel(), Notice.of(
+                    "Thanh toán thành công",
+                    user.getName(),
+                    "Cảm ơn bạn. " + order.itemLabel() + " đã được kích hoạt và không tự động gia hạn. Email này là biên nhận cho giao dịch của bạn.",
+                    "Mở trang dịch vụ", "/admin/dich-vu",
+                    "Bạn nhận được email này vì đã mua dịch vụ nhà tuyển dụng trên itjobs.")
+                    .details(details));
+            return;
+        }
         this.emailService.sendNotice(user.getEmail(), "Thanh toán thành công – Gói " + order.getPlan().getLabel(), Notice.of(
                 "Thanh toán thành công",
                 user.getName(),

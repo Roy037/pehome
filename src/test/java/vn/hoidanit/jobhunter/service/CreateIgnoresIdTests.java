@@ -45,7 +45,7 @@ class CreateIgnoresIdTests {
         CompanyRepository companies = mock(CompanyRepository.class);
         when(companies.save(any(Company.class))).thenAnswer(invocation -> invocation.getArgument(0));
         CompanyService service = new CompanyService(companies, mock(UserRepository.class), mock(JobRepository.class),
-                mock(NotificationService.class));
+                mock(NotificationService.class), mock(PlanOrderRepository.class));
         Company body = new Company();
         body.setId(1);
         body.setName("Hijack");

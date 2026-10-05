@@ -60,7 +60,7 @@ public class ZalopayService {
 
     public String createPaymentUrl(PlanOrder order) {
         requireConfiguration();
-        String redirect = UriComponentsBuilder.fromHttpUrl(this.frontendUrl.replaceAll("/+$", "") + "/")
+        String redirect = UriComponentsBuilder.fromHttpUrl(this.frontendUrl.replaceAll("/+$", "") + order.returnPath())
                 .queryParam("payment", "zalopay").queryParam("txnRef", order.getTxnRef()).build().encode().toUriString();
         String embed;
         try {
@@ -78,7 +78,7 @@ public class ZalopayService {
         body.put("app_user", user);
         body.put("app_time", time);
         body.put("amount", order.getAmount()); // ZaloPay takes VND directly, unlike VNPay's amount * 100.
-        body.put("description", "itjobs - Thanh toan goi " + order.getPlan().getLabel());
+        body.put("description", "itjobs - Thanh toan " + order.itemName());
         body.put("expire_duration_seconds", VnpayService.PAY_WINDOW_MINUTES * 60);
         body.put("embed_data", embed);
         body.put("item", item);

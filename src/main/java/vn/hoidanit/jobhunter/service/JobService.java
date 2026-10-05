@@ -2,6 +2,7 @@ package vn.hoidanit.jobhunter.service;
 
 import vn.hoidanit.jobhunter.repository.ResumeRepository;
 import vn.hoidanit.jobhunter.util.error.ConflictException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ public class JobService {
     private final SkillRepository skillRepository;
     private final CompanyRepository companyRepository;
     private final UserService userService;
+    private final PlanService planService;
     private final ResumeRepository resumeRepository;
     private final NotificationService notificationService;
 
@@ -44,7 +46,8 @@ public class JobService {
             CompanyRepository companyRepository,
             UserService userService,
             ResumeRepository resumeRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService, PlanService planService) {
+        this.planService = planService;
         this.notificationService = notificationService;
         this.resumeRepository = resumeRepository;
         this.jobRepository = jobRepository;
@@ -83,6 +86,7 @@ public class JobService {
 
     public ResCreateJobDTO create(Job j) throws PermissionException, IdInvalidException {
         j.setId(0); // a create never replaces an existing row, whatever id the request body carries
+        j.setPinnedUntil(null); // only a paid order pins a job
         checkDates(j);
         checkSalary(j);
         Company mine = this.userService.currentUserCompany();
@@ -93,6 +97,9 @@ public class JobService {
             User me = this.userService.currentUserOrNull();
             if (me != null && !User.TERMS_VERSION.equals(me.getTermsVersion())) {
                 throw new PermissionException("Bạn cần đồng ý Điều khoản sử dụng dành cho nhà tuyển dụng trước khi đăng tin.");
+            }
+            if (j.isActive() && !expired(j)) {
+                assertRoomToOpen(mine, 0);
             }
             j.setCompany(mine);
         }
@@ -171,6 +178,12 @@ public class JobService {
             }
         }
 
+        // a closed job that is switched back on takes one of the company's places for open jobs again
+        Company owner = this.userService.currentUserCompany();
+        if (owner != null && j.isActive() && !expired(j) && !(jobInDB.isActive() && !jobInDB.isLocked() && !expired(jobInDB))) {
+            assertRoomToOpen(owner, jobInDB.getId());
+        }
+
         // update correct info
         jobInDB.setName(j.getName());
         jobInDB.setSalary(j.getSalary());
@@ -221,6 +234,22 @@ public class JobService {
                     "Không thể xóa tin tuyển dụng đã có hồ sơ ứng tuyển. Hãy tắt trạng thái \"đang tuyển\" để đóng tin thay vì xóa.");
         }
         this.jobRepository.deleteById(id);
+    }
+
+    private static boolean expired(Job job) {
+        return job.getEndDate() != null && !job.getEndDate().isAfter(Instant.now());
+    }
+
+    // ponytail: a company that already has more open jobs than its places (it posted them before the limit existed)
+    // keeps them; it just cannot open another until it closes some or buys a pack.
+    private void assertRoomToOpen(Company company, long exceptJobId) throws PermissionException {
+        Instant now = Instant.now();
+        long open = this.jobRepository.countOpen(company.getId(), exceptJobId, now);
+        int limit = this.planService.employerJobLimit(company.getId(), now);
+        if (open >= limit) {
+            throw new PermissionException("Công ty đã có " + open + "/" + limit
+                    + " tin đang mở. Hãy đóng bớt tin hoặc mua thêm chỗ đăng tin ở mục Dịch vụ.");
+        }
     }
 
     // A locked post, or a post of a company that is not approved yet, is only visible to admins and to the company

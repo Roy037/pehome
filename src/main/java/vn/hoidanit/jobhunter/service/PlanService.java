@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.PlanOrder;
 import vn.hoidanit.jobhunter.repository.PlanOrderRepository;
+import vn.hoidanit.jobhunter.util.constant.EmployerProductEnum;
 import vn.hoidanit.jobhunter.util.constant.PlanEnum;
 
 /** Which premium plan a candidate has right now, and what it allows. No plan means the free tier. */
@@ -59,5 +60,20 @@ public class PlanService {
 
     private static PlanEnum best(List<PlanOrder> active) {
         return active.stream().map(PlanOrder::getPlan).max(Comparator.naturalOrder()).orElse(null);
+    }
+
+    // ---- what a company has bought (employer products) ----
+
+    /** How many jobs a company may have open at once: the free places plus every job pack that is running. */
+    public int employerJobLimit(long companyId, Instant now) {
+        return EmployerProductEnum.FREE_OPEN_JOBS + this.orderRepository.findActiveForCompany(companyId, now).stream()
+                .mapToInt(order -> order.getProduct().getSlots()).sum();
+    }
+
+    /** Until when the company can open candidate profiles and CVs in the talent directory, or null. */
+    public Instant talentUnlockedUntil(long companyId, Instant now) {
+        return this.orderRepository.findActiveForCompany(companyId, now).stream()
+                .filter(order -> order.getProduct() == EmployerProductEnum.TALENT_30).map(PlanOrder::getEndsAt)
+                .max(Comparator.naturalOrder()).orElse(null);
     }
 }

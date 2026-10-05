@@ -22,25 +22,31 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import vn.hoidanit.jobhunter.domain.Company;
+import vn.hoidanit.jobhunter.domain.Job;
 import vn.hoidanit.jobhunter.domain.PlanOrder;
 import vn.hoidanit.jobhunter.domain.Subscriber;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResAdminOrderDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResCreateOrderDTO;
+import vn.hoidanit.jobhunter.domain.response.payment.ResEmployerServicesDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResMyPlanDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResOrderDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResPaymentResultDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResPaymentMethodDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResPlanDTO;
+import vn.hoidanit.jobhunter.repository.JobRepository;
 import vn.hoidanit.jobhunter.repository.PlanOrderRepository;
 import vn.hoidanit.jobhunter.repository.SavedJobRepository;
 import vn.hoidanit.jobhunter.repository.SubscriberRepository;
+import vn.hoidanit.jobhunter.util.constant.EmployerProductEnum;
 import vn.hoidanit.jobhunter.util.constant.OrderStatusEnum;
 import vn.hoidanit.jobhunter.util.constant.PaymentMethodEnum;
 import vn.hoidanit.jobhunter.util.constant.PlanEnum;
 import vn.hoidanit.jobhunter.util.error.GatewayNotConfiguredException;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
+import vn.hoidanit.jobhunter.util.error.PermissionException;
 import vn.hoidanit.jobhunter.util.error.ResourceNotFoundException;
 
 @Service
@@ -61,11 +67,13 @@ public class PaymentService {
     private final MomoService momo;
     private final TransactionTemplate transactions;
     private final NotificationService notificationService;
+    private final JobRepository jobRepository;
 
     public PaymentService(PlanOrderRepository orderRepository, SubscriberRepository subscriberRepository,
             SavedJobRepository savedJobRepository, PlanService planService, VnpayService vnpay,
             NotificationService notificationService, ZalopayService zalopay, MomoService momo,
-            PlatformTransactionManager transactionManager) {
+            PlatformTransactionManager transactionManager, JobRepository jobRepository) {
+        this.jobRepository = jobRepository;
         this.notificationService = notificationService;
         this.orderRepository = orderRepository;
         this.subscriberRepository = subscriberRepository;
@@ -98,17 +106,53 @@ public class PaymentService {
 
     @Transactional
     public ResCreateOrderDTO createOrder(User user, PlanEnum plan, PaymentMethodEnum method, String clientIp) throws IdInvalidException {
+        PlanOrder order = new PlanOrder();
+        order.setUser(user);
+        order.setPlan(plan);
+        order.setAmount(plan.getPriceVnd());
+        return start(order, method, clientIp);
+    }
+
+    /** An employer buys something for their company; a pin names the job. */
+    @Transactional
+    public ResCreateOrderDTO createEmployerOrder(User hr, EmployerProductEnum product, Long jobId, PaymentMethodEnum method,
+            String clientIp) throws IdInvalidException, PermissionException {
+        Company company = hr.getCompany();
+        if (company == null) {
+            throw new PermissionException("Chỉ tài khoản nhà tuyển dụng mới mua được dịch vụ này.");
+        }
+        if (!company.isApproved()) {
+            throw new PermissionException("Công ty cần được quản trị viên duyệt trước khi mua dịch vụ.");
+        }
+        if (!User.TERMS_VERSION.equals(hr.getTermsVersion())) {
+            throw new PermissionException("Bạn cần đồng ý Điều khoản sử dụng dành cho nhà tuyển dụng trước.");
+        }
+        PlanOrder order = new PlanOrder();
+        order.setUser(hr);
+        order.setProduct(product);
+        order.setCompanyId(company.getId());
+        order.setAmount(product.getPriceVnd());
+        if (product.isPin()) {
+            Job job = jobId == null ? null : this.jobRepository.findById(jobId).orElse(null);
+            if (job == null || job.getCompany() == null || job.getCompany().getId() != company.getId()) {
+                throw new PermissionException("Bạn chỉ ghim được tin tuyển dụng của công ty mình.");
+            }
+            if (!job.isActive() || job.isLocked() || (job.getEndDate() != null && job.getEndDate().isBefore(Instant.now()))) {
+                throw new IdInvalidException("Chỉ ghim được tin đang tuyển, chưa khóa và chưa hết hạn.");
+            }
+            order.setJobId(job.getId());
+        }
+        return start(order, method, clientIp);
+    }
+
+    private ResCreateOrderDTO start(PlanOrder order, PaymentMethodEnum method, String clientIp) {
         PaymentMethodEnum chosen = method == null ? PaymentMethodEnum.VNPAY : method;
         boolean realZalopay = chosen == PaymentMethodEnum.ZALOPAY && !this.vnpay.isMock();
         boolean realMomo = chosen == PaymentMethodEnum.MOMO && !this.vnpay.isMock();
         if (!available(chosen)) {
             throw new GatewayNotConfiguredException("Cổng thanh toán chưa được cấu hình. Vui lòng thử lại sau.");
         }
-        PlanOrder order = new PlanOrder();
-        order.setUser(user);
-        order.setPlan(plan);
         order.setMethod(chosen);
-        order.setAmount(plan.getPriceVnd());
         order.setStatus(OrderStatusEnum.PENDING);
         String reference = "AT" + System.currentTimeMillis() + String.format("%04d", this.random.nextInt(10_000));
         if (realMomo) reference = "MM" + UUID.randomUUID().toString().replace("-", "");
@@ -172,12 +216,21 @@ public class PaymentService {
 
     private void activate(PlanOrder order) {
         Instant now = Instant.now();
-        Instant latest = this.orderRepository.latestEnd(order.getUser().getId(), order.getPlan());
+        EmployerProductEnum product = order.getProduct();
+        // a plan continues after the last paid pass of the same plan; a pin after the job's current pin; the talent
+        // unlock after the last one; job packs run side by side, so two of them give twice the places
+        Instant latest = product == null ? this.orderRepository.latestEnd(order.getUser().getId(), order.getPlan())
+                : product.isPin() ? this.jobRepository.pinnedUntilOf(order.getJobId() == null ? -1 : order.getJobId())
+                        : product == EmployerProductEnum.TALENT_30
+                                ? this.orderRepository.latestCompanyEnd(order.getCompanyId(), product) : null;
         Instant start = latest != null && latest.isAfter(now) ? latest : now;
         order.setStatus(OrderStatusEnum.PAID);
         order.setPaidAt(now);
         order.setStartsAt(start);
-        order.setEndsAt(start.plus(Duration.ofDays(PlanEnum.DURATION_DAYS)));
+        order.setEndsAt(start.plus(Duration.ofDays(product == null ? PlanEnum.DURATION_DAYS : product.getDays())));
+        if (product != null && product.isPin() && order.getJobId() != null) {
+            this.jobRepository.pin(order.getJobId(), order.getEndsAt());
+        }
     }
 
     /** A signed ZaloPay callback is authoritative; duplicate callbacks are acknowledged without extending twice. */
@@ -353,6 +406,22 @@ public class PaymentService {
         return rs;
     }
 
+    /** What the company of this employer has, and what it can buy. */
+    @Transactional(readOnly = true)
+    public ResEmployerServicesDTO employerServices(User hr) {
+        long companyId = hr.getCompany().getId();
+        Instant now = Instant.now();
+        return new ResEmployerServicesDTO((int) this.jobRepository.countOpen(companyId, -1, now),
+                EmployerProductEnum.FREE_OPEN_JOBS, this.planService.employerJobLimit(companyId, now),
+                this.planService.talentUnlockedUntil(companyId, now),
+                this.jobRepository.findPinned(companyId, now).stream()
+                        .map(job -> new ResEmployerServicesDTO.Pin(job.getId(), job.getName(), job.getPinnedUntil())).toList(),
+                Arrays.stream(EmployerProductEnum.values())
+                        .map(p -> new ResEmployerServicesDTO.Product(p.name(), p.getLabel(), p.getPriceVnd(), p.getDays(), p.getSlots(), p.isPin()))
+                        .toList(),
+                this.orderRepository.findTop20ByCompanyIdOrderByCreatedAtDesc(companyId).stream().map(this::toOrderDto).toList());
+    }
+
     // ---------------- dev-only fake gateway (app.payment.mock=true) ----------------
 
     private PlanOrder mockOrder(String txnRef) {
@@ -374,13 +443,13 @@ public class PaymentService {
         params.put("vnp_Amount", String.valueOf(order.getAmount() * 100));
         params.put("vnp_BankCode", "NCB");
         params.put("vnp_CardType", "ATM");
-        params.put("vnp_OrderInfo", "Thanh toan goi " + order.getPlan().getLabel() + " itjobs");
+        params.put("vnp_OrderInfo", "Thanh toan " + order.itemName() + " itjobs");
         params.put("vnp_PayDate", STAMP.format(ZonedDateTime.now(VIETNAM)));
         params.put("vnp_ResponseCode", success ? "00" : "24");
         params.put("vnp_TransactionNo", String.valueOf(10_000_000 + this.random.nextInt(89_999_999)));
         params.put("vnp_TransactionStatus", success ? "00" : "02");
         params.put("vnp_TxnRef", order.getTxnRef());
-        return this.vnpay.returnUrl() + "?" + this.vnpay.signedQuery(params);
+        return this.vnpay.returnUrl(order) + "?" + this.vnpay.signedQuery(params);
     }
 
     private static String cut(String value, int max) {
@@ -394,7 +463,9 @@ public class PaymentService {
                 && order.getCreatedAt().isBefore(Instant.now().minus(Duration.ofMinutes(VnpayService.PAY_WINDOW_MINUTES)))) {
             shown = "EXPIRED";
         }
-        return new ResOrderDTO(order.getId(), order.getPlan().name(), order.getAmount(), shown, order.getCreatedAt(), order.getPaidAt(),
-                order.getStartsAt(), order.getEndsAt(), order.getMethod() == null ? null : order.getMethod().name());
+        return new ResOrderDTO(order.getId(), order.getPlan() == null ? null : order.getPlan().name(), order.getAmount(), shown,
+                order.getCreatedAt(), order.getPaidAt(), order.getStartsAt(), order.getEndsAt(),
+                order.getMethod() == null ? null : order.getMethod().name(),
+                order.getProduct() == null ? null : order.getProduct().name(), order.itemLabel());
     }
 }

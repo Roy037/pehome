@@ -434,7 +434,7 @@
                         "auth": {
                             "type": "noauth"
                         },
-                        "description": "Filters use spring-filter syntax. New fields: employmentType (FULL_TIME|PART_TIME|CONTRACT|INTERNSHIP), workMode (ONSITE|REMOTE|HYBRID). Salary overlap filter: (salary > 0 or salaryMax > 0) and salary <: 50000000 and (salaryMax is null or salaryMax >: 20000000)."
+                        "description": "Filters use spring-filter syntax. New fields: employmentType (FULL_TIME|PART_TIME|CONTRACT|INTERNSHIP), workMode (ONSITE|REMOTE|HYBRID). Salary overlap filter: (salary > 0 or salaryMax > 0) and salary <: 50000000 and (salaryMax is null or salaryMax >: 20000000). Send sort=pinnedUntil,desc first (then your own sort) to list pinned jobs on top; posts of companies that are not approved are not listed."
                     }
                 },
                 {
@@ -480,7 +480,7 @@
                                 }
                             }
                         },
-                        "description": "salary is the monthly minimum in VND and salaryMax the maximum (optional; 0 or null = not given). salary 0 with no salaryMax means \"thỏa thuận\". 400 if salaryMax < salary or either is negative."
+                        "description": "salary is the monthly minimum in VND and salaryMax the maximum (optional; 0 or null = not given). salary 0 with no salaryMax means \"thỏa thuận\". 400 if salaryMax < salary or either is negative. An employer cannot have more open jobs than their places (3 free plus job packs): 403 with the count. pinnedUntil in the body is ignored; only a paid pin sets it."
                     }
                 },
                 {
@@ -2705,6 +2705,53 @@
                             ]
                         },
                         "description": "Signed-in owner of the order. Asks MoMo for the order status and settles it; the site calls this when the browser comes back from MoMo."
+                    }
+                },
+                {
+                    "name": "Employer services (my company)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/employer/services",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "employer",
+                                "services"
+                            ]
+                        },
+                        "description": "Employer accounts only (403 otherwise). Open jobs against the limit (3 free places plus running job packs), the talent unlock end date, pinned jobs, the products on sale with prices, and the last 20 orders of the company."
+                    }
+                },
+                {
+                    "name": "Buy an employer service",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/employer/orders",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "employer",
+                                "orders"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"product\": \"JOB_PIN_7\",\n  \"jobId\": \"{{jobId}}\",\n  \"method\": \"VNPAY\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Approved company, accepted terms. product: JOB_PIN_7 | JOB_PIN_30 (jobId required: an open job of the company), JOB_SLOTS_5 (5 more open jobs for 30 days; packs run side by side), TALENT_30 (profile details and CVs in the talent directory for 30 days; buying again continues from the end). Same gateways and mock gateway as the candidate plans; the browser comes back to /admin/dich-vu."
                     }
                 }
             ]

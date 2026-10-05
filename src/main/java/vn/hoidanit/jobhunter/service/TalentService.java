@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,17 @@ public class TalentService {
         Company company = me.getCompany();
         if (!UserService.isSuperAdmin(me) && (company == null || !company.isApproved())) {
             throw new PermissionException("Chỉ nhà tuyển dụng đã được duyệt mới xem được kho ứng viên.");
+        }
+    }
+
+    // The list is free to browse; opening a profile or a CV needs the talent directory unlocked for the company.
+    private void assertUnlocked() throws IdInvalidException, PermissionException {
+        User me = this.userService.handleGetCurrentUser();
+        if (UserService.isSuperAdmin(me)) {
+            return;
+        }
+        if (this.planService.talentUnlockedUntil(me.getCompany().getId(), Instant.now()) == null) {
+            throw new PermissionException("Hãy mở khóa kho ứng viên (mục Dịch vụ) để xem chi tiết hồ sơ và CV.");
         }
     }
 
@@ -130,6 +142,7 @@ public class TalentService {
 
     public ResTalentDTO.Detail detail(long id) throws IdInvalidException, PermissionException {
         CandidateProfile profile = find(id);
+        assertUnlocked();
         PlanEnum plan = this.planService.activePlan(profile.getUser().getId());
         return new ResTalentDTO.Detail(toSummary(profile, plan), profile.getUser().getEmail(),
                 new ArrayList<>(profile.getShortGoals()), new ArrayList<>(profile.getLongGoals()),
@@ -139,6 +152,7 @@ public class TalentService {
     /** Stored file name of the opted-in candidate's CV. */
     public String cvOf(long id) throws IdInvalidException, PermissionException {
         String cv = find(id).getCvUrl();
+        assertUnlocked();
         if (cv == null) {
             throw new ResourceNotFoundException("Ứng viên chưa tải CV lên hồ sơ.");
         }

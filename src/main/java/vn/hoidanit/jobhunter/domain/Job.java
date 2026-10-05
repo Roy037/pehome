@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -72,6 +73,10 @@ public class Job {
     private Instant startDate;
     private Instant endDate;
     private boolean active;
+
+    // pinned to the top of the job list until this moment; set by a paid order, never by the client
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Instant pinnedUntil;
 
     // Moderation: a locked post is hidden from the public and takes no applications; only an admin changes this.
     @Column(columnDefinition = "bit(1) not null default 0")

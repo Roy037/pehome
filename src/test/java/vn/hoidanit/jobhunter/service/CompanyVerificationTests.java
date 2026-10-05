@@ -21,6 +21,7 @@ import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResCompanyVerificationDTO;
 import vn.hoidanit.jobhunter.repository.CompanyRepository;
 import vn.hoidanit.jobhunter.repository.JobRepository;
+import vn.hoidanit.jobhunter.repository.PlanOrderRepository;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 import vn.hoidanit.jobhunter.util.error.ConflictException;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
@@ -30,7 +31,7 @@ class CompanyVerificationTests {
     private final UserRepository users = mock(UserRepository.class);
     private final NotificationService notices = mock(NotificationService.class);
     private final CompanyService service = new CompanyService(this.companies, this.users, mock(JobRepository.class),
-            this.notices);
+            this.notices, mock(PlanOrderRepository.class));
 
     private static Company company(long id, boolean approved) {
         Company company = new Company();

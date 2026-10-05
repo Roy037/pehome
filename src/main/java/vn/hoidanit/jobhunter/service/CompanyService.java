@@ -2,6 +2,7 @@ package vn.hoidanit.jobhunter.service;
 
 import org.springframework.transaction.annotation.Transactional;
 import vn.hoidanit.jobhunter.repository.JobRepository;
+import vn.hoidanit.jobhunter.repository.PlanOrderRepository;
 import vn.hoidanit.jobhunter.util.error.ConflictException;
 import vn.hoidanit.jobhunter.util.error.ResourceNotFoundException;
 import java.time.Instant;
@@ -29,13 +30,15 @@ public class CompanyService {
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
     private final JobRepository jobRepository;
+    private final PlanOrderRepository orderRepository;
     private final NotificationService notificationService;
 
     public CompanyService(
             CompanyRepository companyRepository,
             UserRepository userRepository,
             JobRepository jobRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService, PlanOrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
         this.jobRepository = jobRepository;
         this.notificationService = notificationService;
         this.companyRepository = companyRepository;
@@ -74,6 +77,10 @@ public class CompanyService {
             Company com = comOptional.get();
             // fetch all user belong to this company
             List<User> users = this.userRepository.findByCompany(com);
+            // the ledger keeps its rows: a company or an employer that paid cannot be deleted
+            if (this.orderRepository.existsByCompanyId(id) || users.stream().anyMatch(u -> this.orderRepository.existsByUserId(u.getId()))) {
+                throw new ConflictException("Không thể xóa công ty đã có giao dịch thanh toán.");
+            }
             this.userRepository.deleteAll(users);
         }
 

@@ -134,6 +134,15 @@ public class UserService {
         return user;
     }
 
+    // Employer-only actions (buying services) are for accounts tied to a company.
+    public User currentEmployer() throws IdInvalidException, PermissionException {
+        User user = handleGetCurrentUser();
+        if (user.getCompany() == null) {
+            throw new PermissionException("Chỉ tài khoản nhà tuyển dụng mới dùng được tính năng này.");
+        }
+        return user;
+    }
+
     public User currentUserOrNull() {
         return this.userRepository.findByEmail(SecurityUtil.getCurrentUserLogin().orElse(""));
     }

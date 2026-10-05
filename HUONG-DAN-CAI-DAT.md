@@ -177,7 +177,8 @@ UPDATE users SET email_verified = 1 WHERE email = 'email-vua-dang-ky@example.com
 2. Xác thực email (bấm nút trong email, hoặc xem mục "Lưu ý về email" ở trên nếu chưa cấu hình Gmail).
 3. Vào `/admin/company`, bấm sửa công ty, **tải giấy phép kinh doanh** (PDF hoặc ảnh, chỉ quản trị viên xem được). Banner đầu trang liệt kê những mục còn thiếu.
 4. Chờ quản trị viên xét duyệt. Quản trị viên chỉ duyệt được khi đã có email xác thực, mã số thuế hợp lệ và giấy phép. Trong lúc chờ, tin của công ty chưa hiển thị công khai.
-5. Sau khi được duyệt: đăng tin, xem hồ sơ ứng tuyển, đổi trạng thái, mời phỏng vấn.
+5. Sau khi được duyệt: đăng tin (tối đa 3 tin đang mở miễn phí), xem hồ sơ ứng tuyển, đổi trạng thái, mời phỏng vấn.
+6. Mục **Dịch vụ** (`/admin/dich-vu`): ghim tin lên đầu danh sách, mua thêm chỗ đăng tin, mở khóa kho ứng viên. Với `PAYMENT_MOCK=true` thanh toán bằng cổng giả (nút "Thanh toán thành công").
 
 ### Quản trị viên
 

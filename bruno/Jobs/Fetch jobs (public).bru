@@ -19,5 +19,5 @@ params:query {
 }
 
 docs {
-  Filters use spring-filter syntax. New fields: employmentType (FULL_TIME|PART_TIME|CONTRACT|INTERNSHIP), workMode (ONSITE|REMOTE|HYBRID). Salary overlap filter: (salary > 0 or salaryMax > 0) and salary <: 50000000 and (salaryMax is null or salaryMax >: 20000000).
+  Filters use spring-filter syntax. New fields: employmentType (FULL_TIME|PART_TIME|CONTRACT|INTERNSHIP), workMode (ONSITE|REMOTE|HYBRID). Salary overlap filter: (salary > 0 or salaryMax > 0) and salary <: 50000000 and (salaryMax is null or salaryMax >: 20000000). Send sort=pinnedUntil,desc first (then your own sort) to list pinned jobs on top; posts of companies that are not approved are not listed.
 }

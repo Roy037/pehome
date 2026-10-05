@@ -55,14 +55,14 @@ public class MomoService {
 
     public String createPaymentUrl(PlanOrder order) {
         requireConfiguration();
-        String redirect = UriComponentsBuilder.fromHttpUrl(this.frontendUrl.replaceAll("/+$", "") + "/")
+        String redirect = UriComponentsBuilder.fromHttpUrl(this.frontendUrl.replaceAll("/+$", "") + order.returnPath())
                 .queryParam("payment", "momo").queryParam("txnRef", order.getTxnRef()).build().encode().toUriString();
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("partnerCode", this.partnerCode);
         body.put("requestId", order.getTxnRef());
         body.put("orderId", order.getTxnRef());
         body.put("amount", order.getAmount());
-        body.put("orderInfo", "itjobs - Thanh toan goi " + order.getPlan().getLabel());
+        body.put("orderInfo", "itjobs - Thanh toan " + order.itemName());
         body.put("redirectUrl", redirect);
         body.put("ipnUrl", this.ipnUrl);
         body.put("requestType", "captureWallet");

@@ -21,10 +21,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.domain.PlanOrder;
+import vn.hoidanit.jobhunter.domain.request.ReqCreateEmployerOrderDTO;
 import vn.hoidanit.jobhunter.domain.request.ReqCreateOrderDTO;
 import vn.hoidanit.jobhunter.domain.request.ReqMockPaymentDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResCreateOrderDTO;
+import vn.hoidanit.jobhunter.domain.response.payment.ResEmployerServicesDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResMyPlanDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResOrderDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResPaymentMethodDTO;
@@ -82,6 +84,23 @@ public class PaymentController {
         String ip = forwarded != null && !forwarded.isBlank() ? forwarded.split(",")[0] : http.getRemoteAddr();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(this.paymentService.createOrder(this.userService.currentCandidate(), req.plan(), req.method(), ip));
+    }
+
+    // What the employer's company has bought and can buy. Employer accounts only (checked here: /me/** needs no permission row).
+    @GetMapping("/me/employer/services")
+    @ApiMessage("Services of the employer's company")
+    public ResponseEntity<ResEmployerServicesDTO> employerServices() throws IdInvalidException, PermissionException {
+        return ResponseEntity.ok(this.paymentService.employerServices(this.userService.currentEmployer()));
+    }
+
+    @PostMapping("/me/employer/orders")
+    @ApiMessage("Create an order for an employer service")
+    public ResponseEntity<ResCreateOrderDTO> createEmployerOrder(@Valid @RequestBody ReqCreateEmployerOrderDTO req,
+            HttpServletRequest http) throws IdInvalidException, PermissionException {
+        String forwarded = http.getHeader("X-Forwarded-For");
+        String ip = forwarded != null && !forwarded.isBlank() ? forwarded.split(",")[0] : http.getRemoteAddr();
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.paymentService.createEmployerOrder(
+                this.userService.currentEmployer(), req.product(), req.jobId(), req.method(), ip));
     }
 
     // Where VNPay sends the browser back to (through the frontend result page). Public: the signature is the credential.

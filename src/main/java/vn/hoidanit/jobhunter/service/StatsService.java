@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
 import vn.hoidanit.jobhunter.domain.response.ResAdminStatsDTO;
+import vn.hoidanit.jobhunter.util.constant.EmployerProductEnum;
 import vn.hoidanit.jobhunter.util.constant.PlanEnum;
 
 @Service
@@ -50,6 +51,13 @@ public class StatsService {
             orders += (Long) row[0];
             total += ((Number) row[1]).longValue();
         }
+        for (EmployerProductEnum product : EmployerProductEnum.values()) {
+            Object[] row = this.em.createQuery("select count(o), coalesce(sum(o.amount), 0) from PlanOrder o "
+                    + "where o.status = 'PAID' and o.product = :product", Object[].class).setParameter("product", product).getSingleResult();
+            byPlan.add(new ResAdminStatsDTO.PlanSales(product.name(), product.getLabel(), (Long) row[0], ((Number) row[1]).longValue()));
+            orders += (Long) row[0];
+            total += ((Number) row[1]).longValue();
+        }
         long last30 = this.em.createQuery("select coalesce(sum(o.amount), 0) from PlanOrder o where o.status = 'PAID' and o.paidAt >= :since", Long.class)
                 .setParameter("since", now.minus(30, ChronoUnit.DAYS)).getSingleResult();
 
@@ -57,7 +65,7 @@ public class StatsService {
                 new ResAdminStatsDTO.Users(count("select count(u) from User u"),
                         count("select count(u) from User u where u.role.name = 'NORMAL_USER'"),
                         count("select count(u) from User u where u.company is not null"),
-                        count("select count(distinct o.user.id) from PlanOrder o where o.status = 'PAID' and o.startsAt <= :now and o.endsAt > :now", now)),
+                        count("select count(distinct o.user.id) from PlanOrder o where o.plan is not null and o.status = 'PAID' and o.startsAt <= :now and o.endsAt > :now", now)),
                 new ResAdminStatsDTO.Companies(companies, approved, companies - approved - rejected, rejected),
                 new ResAdminStatsDTO.Jobs(count("select count(j) from Job j"),
                         count("select count(j) from Job j where j.active = true and j.locked = false "

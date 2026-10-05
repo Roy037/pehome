@@ -59,6 +59,11 @@ public class VnpayService {
         return this.frontendUrl.replaceAll("/+$", "") + "/";
     }
 
+    /** Where the browser comes back to for this order: the site root for plans, the employer area for their products. */
+    public String returnUrl(PlanOrder order) {
+        return this.frontendUrl.replaceAll("/+$", "") + order.returnPath();
+    }
+
     private String secret() {
         return this.mock ? MOCK_SECRET : this.hashSecret;
     }
@@ -80,13 +85,13 @@ public class VnpayService {
         params.put("vnp_Amount", String.valueOf(order.getAmount() * 100));
         params.put("vnp_CurrCode", "VND");
         params.put("vnp_TxnRef", order.getTxnRef());
-        params.put("vnp_OrderInfo", "Thanh toan goi " + order.getPlan().getLabel() + " itjobs");
+        params.put("vnp_OrderInfo", "Thanh toan " + order.itemName() + " itjobs");
         params.put("vnp_OrderType", "other");
         params.put("vnp_Locale", "vn");
         if (order.getMethod() != null && order.getMethod().getVnpayBankCode() != null) {
             params.put("vnp_BankCode", order.getMethod().getVnpayBankCode()); // opens VNPay straight on QR / bank / card
         }
-        params.put("vnp_ReturnUrl", returnUrl());
+        params.put("vnp_ReturnUrl", returnUrl(order));
         params.put("vnp_IpAddr", clientIp);
         params.put("vnp_CreateDate", STAMP.format(now));
         params.put("vnp_ExpireDate", STAMP.format(now.plusMinutes(PAY_WINDOW_MINUTES)));

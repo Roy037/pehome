@@ -23,6 +23,7 @@ import vn.hoidanit.jobhunter.domain.PlanOrder;
 import vn.hoidanit.jobhunter.controller.PaymentController;
 import vn.hoidanit.jobhunter.util.FormatRestResponse;
 import vn.hoidanit.jobhunter.domain.User;
+import vn.hoidanit.jobhunter.repository.JobRepository;
 import vn.hoidanit.jobhunter.repository.PlanOrderRepository;
 import vn.hoidanit.jobhunter.repository.SavedJobRepository;
 import vn.hoidanit.jobhunter.repository.SubscriberRepository;
@@ -47,7 +48,7 @@ class PaymentServiceTests {
         PlatformTransactionManager transactions = mock(PlatformTransactionManager.class);
         when(transactions.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
         payments = new PaymentService(orders, mock(SubscriberRepository.class), mock(SavedJobRepository.class),
-                mock(PlanService.class), vnpay, notifications, zalopay, momo, transactions);
+                mock(PlanService.class), vnpay, notifications, zalopay, momo, transactions, mock(JobRepository.class));
         user = new User();
         user.setId(7);
         order = new PlanOrder();
