@@ -10,14 +10,13 @@
     <meta property="og:title" th:content="${title}">
     <meta property="og:description" th:content="${description}">
     <meta property="og:image" th:content="${image}">
-    <meta property="og:url" th:content="${target}">
+    <meta property="og:url" th:content="${self}">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" th:content="${title}">
     <meta name="twitter:description" th:content="${description}">
     <meta name="twitter:image" th:content="${image}">
-    <link rel="canonical" th:href="${target}">
+    <link rel="canonical" th:href="${self}">
     <script th:inline="javascript">window.location.replace([[${target}]]);</script>
-    <noscript><meta http-equiv="refresh" th:attr="content='0;url=' + ${target}"></noscript>
 </head>
 <body>
 <p><a th:href="${target}" th:text="${title}">itjobs</a></p>

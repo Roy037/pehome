@@ -50,7 +50,7 @@ public class ShareController {
         String where = CITIES.getOrDefault(job.getLocation(), "Việt Nam");
         String description = (company == null ? "" : company.getName() + " đang tuyển. ") + "Mức lương: "
                 + SalaryText.format(job.getSalary(), job.getSalaryMax()) + ". Địa điểm: " + where + ".";
-        return page(model, response, job.getName(), description, company, site("/job/" + id));
+        return page(model, response, job.getName(), description, company, site("/job/" + id), base() + "/share/job/" + id);
     }
 
     @GetMapping("/share/company/{id}")
@@ -61,11 +61,12 @@ public class ShareController {
         }
         String description = company.getDescription() == null ? "Xem hồ sơ công ty và các vị trí đang tuyển trên itjobs."
                 : plain(company.getDescription(), 200);
-        return page(model, response, company.getName(), description, company, site("/company/" + id));
+        return page(model, response, company.getName(), description, company, site("/company/" + id),
+                base() + "/share/company/" + id);
     }
 
     private String page(Model model, HttpServletResponse response, String title, String description, Company company,
-            String target) {
+            String target, String self) {
         String logo = company == null || company.getLogo() == null || company.getLogo().isBlank()
                 ? base() + "/mail/itjobs-logo.png"
                 : base() + "/storage/company/" + company.getLogo();
@@ -73,6 +74,8 @@ public class ShareController {
         model.addAttribute("description", description);
         model.addAttribute("image", logo);
         model.addAttribute("target", target);
+        // og:url and canonical name this page itself: a crawler that followed them to the site would only find its generic tags
+        model.addAttribute("self", self);
         response.setHeader("Cache-Control", "public, max-age=300");
         return "share";
     }

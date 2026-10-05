@@ -59,6 +59,7 @@ class ShareControllerTests {
         assertEquals("share", this.controller.job(7L, model, new MockHttpServletResponse()));
         assertEquals("QA Automation", model.get("title"));
         assertEquals("https://itjobs.vn/job/7", model.get("target"));
+        assertEquals("https://api.itjobs.vn/share/job/7", model.get("self"));
         assertEquals("https://api.itjobs.vn/storage/company/fpt.png", model.get("image"));
         assertTrue(String.valueOf(model.get("description")).contains("FPT Software") && String.valueOf(model.get("description")).contains("Hà Nội"));
     }
@@ -95,10 +96,13 @@ class ShareControllerTests {
         context.setVariable("description", "a & b");
         context.setVariable("image", "https://api.itjobs.vn/mail/itjobs-logo.png");
         context.setVariable("target", "https://itjobs.vn/job/7");
+        context.setVariable("self", "https://api.itjobs.vn/share/job/7");
         String html = engine.process("share", context);
         assertFalse(html.contains("<script>alert(1)</script>"), "title must not break out of the attribute");
         assertTrue(html.contains("og:title") && html.contains("og:image") && html.contains("window.location.replace"));
         assertTrue(html.contains("https://itjobs.vn/job/7"));
+        assertTrue(html.contains("<meta property=\"og:url\" content=\"https://api.itjobs.vn/share/job/7\"") && html.contains("rel=\"canonical\" href=\"https://api.itjobs.vn/share/job/7\""));
+        assertFalse(html.contains("http-equiv=\"refresh\""), "crawlers follow a meta refresh");
     }
 
     @Test
