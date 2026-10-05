@@ -173,9 +173,11 @@ UPDATE users SET email_verified = 1 WHERE email = 'email-vua-dang-ky@example.com
 
 ### Nhà tuyển dụng
 
-1. Đăng ký ở `/nha-tuyen-dung/dang-ky` (tài khoản kèm công ty).
-2. Chờ quản trị viên duyệt công ty.
-3. Vào `/admin`: đăng tin, xem hồ sơ ứng tuyển, đổi trạng thái, mời phỏng vấn.
+1. Đăng ký ở `/nha-tuyen-dung/dang-ky` (tài khoản kèm công ty): cần tên công ty, địa chỉ, **mã số thuế**, **số điện thoại**, tick đồng ý **Điều khoản sử dụng dành cho nhà tuyển dụng**.
+2. Xác thực email (bấm nút trong email, hoặc xem mục "Lưu ý về email" ở trên nếu chưa cấu hình Gmail).
+3. Vào `/admin/company`, bấm sửa công ty, **tải giấy phép kinh doanh** (PDF hoặc ảnh, chỉ quản trị viên xem được). Banner đầu trang liệt kê những mục còn thiếu.
+4. Chờ quản trị viên xét duyệt. Quản trị viên chỉ duyệt được khi đã có email xác thực, mã số thuế hợp lệ và giấy phép. Trong lúc chờ, tin của công ty chưa hiển thị công khai.
+5. Sau khi được duyệt: đăng tin, xem hồ sơ ứng tuyển, đổi trạng thái, mời phỏng vấn.
 
 ### Quản trị viên
 

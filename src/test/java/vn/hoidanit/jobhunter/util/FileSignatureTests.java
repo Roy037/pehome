@@ -54,6 +54,7 @@ class FileSignatureTests {
         assertEquals(java.util.List.of("pdf", "doc", "docx", "odt", "rtf", "jpg", "jpeg", "png", "webp"), FileSignature.ALLOWED.get("resume"));
         assertFalse(FileSignature.ALLOWED.get("resume").contains("svg"), "svg can carry scripts");
         assertFalse(FileSignature.ALLOWED.get("avatar").contains("docx"));
+        assertEquals(java.util.List.of("pdf", "jpg", "jpeg", "png", "webp"), FileSignature.ALLOWED.get("company-doc"));
         assertFalse(FileSignature.ALLOWED.get("company").contains("pdf"));
         assertEquals("pdf", FileSignature.extensionOf("CV.Final.PDF"));
         assertEquals("", FileSignature.extensionOf("no-extension"));

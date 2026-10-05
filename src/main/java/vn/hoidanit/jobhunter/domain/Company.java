@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -87,6 +88,22 @@ public class Company {
     @Size(max = 255, message = "Liên kết YouTube tối đa 255 ký tự")
     @Pattern(regexp = "^(https://(www\\.)?(youtube\\.com|youtu\\.be)" + SOCIAL_TAIL, message = "Liên kết YouTube không hợp lệ (cần https://…)")
     private String youtubeUrl;
+
+    // Tax code (MST): public, like on any invoice. Unique; NULL for companies that predate it.
+    @Pattern(regexp = "^(\\d{10}(-\\d{3})?)?$", message = "Mã số thuế gồm 10 chữ số, hoặc 13 chữ số dạng 0123456789-001")
+    @Column(length = 14)
+    private String taxCode;
+
+    // Contact phone: only the admin reviewing the company and the company itself see it (see /companies/{id}/verification).
+    @Pattern(regexp = "^((\\+84|0)\\d{9,10})?$", message = "Số điện thoại chưa hợp lệ")
+    @Column(length = 20)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String phone;
+
+    // Stored name of the business licence in the private company-doc folder; only /companies/{id}/license serves it.
+    @Pattern(regexp = "^[A-Za-z0-9._-]*$", message = "Tên tệp giấy phép không hợp lệ")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String licenseFile;
 
     // Self-registered employers start unapproved; the column default keeps existing companies approved.
     @Column(columnDefinition = "bit(1) not null default 1")

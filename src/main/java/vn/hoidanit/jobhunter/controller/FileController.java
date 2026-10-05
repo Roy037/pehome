@@ -37,8 +37,10 @@ public class FileController {
     @Value("${hoidanit.upload-file.base-uri}")
     private String baseURI;
 
-    private static final List<String> FOLDERS = Arrays.asList("resume", "company", "avatar");
+    private static final List<String> FOLDERS = Arrays.asList("resume", "company", "company-doc", "avatar");
     private static final List<String> PUBLIC_FOLDERS = Arrays.asList("company", "avatar");
+    // CVs and company documents carry the uploader's id and are streamed only after an access check
+    private static final List<String> PRIVATE_FOLDERS = Arrays.asList("resume", "company-doc");
 
     private final FileService fileService;
 
@@ -79,14 +81,14 @@ public class FileController {
         User me = this.userService.handleGetCurrentUser();
         // company logos and banners are public images: only employers (and admins) may publish them
         boolean admin = me.getRole() != null && "SUPER_ADMIN".equals(me.getRole().getName());
-        if ("company".equals(folder) && me.getCompany() == null && !admin) {
-            throw new PermissionException("Chỉ nhà tuyển dụng hoặc quản trị viên mới được tải ảnh công ty.");
+        if (("company".equals(folder) || "company-doc".equals(folder)) && me.getCompany() == null && !admin) {
+            throw new PermissionException("Chỉ nhà tuyển dụng hoặc quản trị viên mới được tải tệp của công ty.");
         }
         // create a directory if not exist
         this.fileService.createDirectory(baseURI + folder);
 
         // store file; CVs carry the uploader's id so nobody else can attach (and later read) them
-        String uploadFile = this.fileService.store(file, folder, "resume".equals(folder) ? me.getId() : null);
+        String uploadFile = this.fileService.store(file, folder, PRIVATE_FOLDERS.contains(folder) ? me.getId() : null);
 
         ResUploadFileDTO res = new ResUploadFileDTO(uploadFile, Instant.now());
 
@@ -103,8 +105,9 @@ public class FileController {
             throw new StorageException("Missing required params : (fileName or folder) in query params.");
         }
         checkFolder(folder);
-        if ("resume".equals(folder)) {
-            // CVs are only available through GET /resumes/{id}/document, which checks who is asking.
+        if (!PUBLIC_FOLDERS.contains(folder)) {
+            // CVs are only available through GET /resumes/{id}/document and licences through GET /companies/{id}/license,
+            // which check who is asking.
             throw new StorageException("Invalid folder. only allows " + PUBLIC_FOLDERS);
         }
         if (fileName.contains("/") || fileName.contains("\\") || fileName.contains("..")) {

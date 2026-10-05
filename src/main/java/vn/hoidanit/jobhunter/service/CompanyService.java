@@ -7,11 +7,16 @@ import vn.hoidanit.jobhunter.util.error.ResourceNotFoundException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.net.URI;
+import java.util.regex.Pattern;
+import java.util.Set;
+import java.util.Objects;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.Company;
+import vn.hoidanit.jobhunter.domain.response.ResCompanyVerificationDTO;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.CompanyRepository;
@@ -82,6 +87,11 @@ public class CompanyService {
     public Company approve(long id) throws IdInvalidException {
         Company company = this.companyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Công ty với id = " + id + " không tồn tại"));
+        List<String> missing = verification(company).checks().stream().filter(c -> c.required() && !c.ok())
+                .map(ResCompanyVerificationDTO.Check::label).toList();
+        if (!missing.isEmpty()) {
+            throw new IdInvalidException("Chưa thể duyệt, còn thiếu: " + String.join("; ", missing) + ".");
+        }
         boolean wasPending = !company.isApproved();
         company.setApproved(true);
         company.setRejectionReason(null);
@@ -145,18 +155,117 @@ public class CompanyService {
     }
 
     public Company handleUpdateCompany(Company reqCompany) {
+        return handleUpdateCompany(reqCompany, false);
+    }
+
+    /**
+     * `byEmployer`: an approved company that changes the things its approval rests on (name, tax code, licence) is
+     * not hidden again, but the admin is told to look at it.
+     */
+    public Company handleUpdateCompany(Company reqCompany, boolean byEmployer) {
         Optional<Company> companyOptional = this.companyRepository.findById(reqCompany.getId());
         if (companyOptional.isPresent()) {
             Company currentCompany = companyOptional.get();
+            String oldName = currentCompany.getName(), oldTax = currentCompany.getTaxCode(),
+                    oldLicense = currentCompany.getLicenseFile();
             currentCompany.setLogo(reqCompany.getLogo());
             currentCompany.setName(reqCompany.getName());
             currentCompany.setDescription(reqCompany.getDescription());
             currentCompany.setAddress(reqCompany.getAddress());
             copyProfile(currentCompany, reqCompany);
+            // a request that leaves these out (an older client) keeps what is stored
+            String tax = blankToNull(reqCompany.getTaxCode());
+            if (tax != null && !tax.equals(oldTax)) {
+                if (this.companyRepository.existsByTaxCodeAndIdNot(tax, currentCompany.getId())) {
+                    throw new ConflictException("Mã số thuế " + tax + " đã được đăng ký trên hệ thống.");
+                }
+                currentCompany.setTaxCode(tax);
+            }
+            String phone = blankToNull(reqCompany.getPhone());
+            if (phone != null) {
+                currentCompany.setPhone(phone);
+            }
+            String license = blankToNull(reqCompany.getLicenseFile());
+            if (license != null) {
+                currentCompany.setLicenseFile(license);
+            }
             // save
-            return this.companyRepository.save(currentCompany);
+            Company saved = this.companyRepository.save(currentCompany);
+            if (byEmployer && saved.isApproved() && (!Objects.equals(oldName, saved.getName())
+                    || !Objects.equals(oldTax, saved.getTaxCode()) || !Objects.equals(oldLicense, saved.getLicenseFile()))) {
+                this.notificationService.adminCompanyChanged(saved);
+            }
+            return saved;
         }
         return null;
+    }
+
+    public boolean existsByTaxCode(String taxCode) {
+        return this.companyRepository.existsByTaxCode(taxCode.trim());
+    }
+
+    private static final Pattern TAX_CODE = Pattern.compile("^\\d{10}(-\\d{3})?$");
+    private static final Set<String> FREE_MAIL = Set.of("gmail.com", "googlemail.com", "yahoo.com", "yahoo.com.vn",
+            "outlook.com", "hotmail.com", "live.com", "icloud.com", "me.com", "protonmail.com", "proton.me");
+
+    private static String domainOf(String email) {
+        int at = email == null ? -1 : email.lastIndexOf('@');
+        return at < 0 ? "" : email.substring(at + 1).trim().toLowerCase();
+    }
+
+    static boolean isFreeMail(String email) {
+        return FREE_MAIL.contains(domainOf(email));
+    }
+
+    /** The host of a website address without "www.", or null when it is empty or not an address. */
+    static String hostOf(String website) {
+        if (website == null || website.isBlank()) {
+            return null;
+        }
+        try {
+            String host = URI.create(website.trim()).getHost();
+            return host == null ? null : host.toLowerCase().replaceFirst("^www\\.", "");
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /** True when the e-mail's domain is the website's host or one of its subdomains (hr@mail.acme.vn for acme.vn). */
+    static boolean sameDomain(String email, String host) {
+        String domain = domainOf(email);
+        return host != null && !domain.isEmpty() && (domain.equals(host) || domain.endsWith("." + host));
+    }
+
+    public ResCompanyVerificationDTO verification(Company company) {
+        List<User> employers = this.userRepository.findByCompany(company);
+        String host = hostOf(company.getWebsite());
+        List<ResCompanyVerificationDTO.Contact> contacts = employers.stream()
+                .map(user -> new ResCompanyVerificationDTO.Contact(user.getName(), user.getEmail(), user.isEmailVerified(),
+                        isFreeMail(user.getEmail()), host == null ? null : sameDomain(user.getEmail(), host)))
+                .toList();
+        String tax = company.getTaxCode();
+        boolean taxOk = tax != null && TAX_CODE.matcher(tax).matches()
+                && !this.companyRepository.existsByTaxCodeAndIdNot(tax, company.getId());
+        boolean verified = employers.isEmpty() || employers.stream().anyMatch(User::isEmailVerified);
+        boolean hasLicense = company.getLicenseFile() != null && !company.getLicenseFile().isBlank();
+        boolean hasPhone = company.getPhone() != null && !company.getPhone().isBlank();
+        boolean domainOk = contacts.stream().anyMatch(c -> Boolean.TRUE.equals(c.domainMatch()) && !c.freeMail());
+        String domainNote = host == null ? "Công ty chưa có website để đối chiếu"
+                : !employers.isEmpty() && contacts.stream().allMatch(ResCompanyVerificationDTO.Contact::freeMail)
+                        ? "Người liên hệ đang dùng email miễn phí"
+                        : null;
+        List<ResCompanyVerificationDTO.Check> checks = List.of(
+                new ResCompanyVerificationDTO.Check("email", "Email người liên hệ đã xác thực", verified, true,
+                        employers.isEmpty() ? "Công ty chưa có tài khoản nhà tuyển dụng" : null),
+                new ResCompanyVerificationDTO.Check("taxCode", "Mã số thuế hợp lệ và không trùng", taxOk, true,
+                        tax == null ? "Chưa nhập mã số thuế" : taxOk ? null : "Sai định dạng hoặc đã có công ty khác dùng"),
+                new ResCompanyVerificationDTO.Check("license", "Đã tải giấy phép kinh doanh", hasLicense, true, null),
+                new ResCompanyVerificationDTO.Check("phone", "Có số điện thoại liên hệ", hasPhone, false, null),
+                new ResCompanyVerificationDTO.Check("domain", "Email công việc cùng tên miền với website", domainOk, false,
+                        domainNote));
+        int score = (int) checks.stream().filter(ResCompanyVerificationDTO.Check::ok).count();
+        return new ResCompanyVerificationDTO(tax, company.getPhone(), company.getWebsite(), hasLicense, contacts, checks,
+                score);
     }
 
     public ResultPaginationDTO handleGetCompany(Specification<Company> spec, Pageable pageable) {

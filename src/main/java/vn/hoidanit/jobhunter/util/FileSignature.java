@@ -14,6 +14,7 @@ public final class FileSignature {
     public static final Map<String, List<String>> ALLOWED = Map.of(
             "resume", List.of("pdf", "doc", "docx", "odt", "rtf", "jpg", "jpeg", "png", "webp"),
             "company", List.of("jpg", "jpeg", "png", "webp"),
+            "company-doc", List.of("pdf", "jpg", "jpeg", "png", "webp"),
             "avatar", List.of("jpg", "jpeg", "png", "webp"));
 
     public static String extensionOf(String fileName) {

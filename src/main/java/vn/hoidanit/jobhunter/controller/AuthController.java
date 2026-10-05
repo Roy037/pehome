@@ -325,6 +325,9 @@ public class AuthController {
                 if (this.companyService.existsByName(req.getCompanyName())) {
                         throw new ConflictException("Công ty " + req.getCompanyName() + " đã tồn tại trên hệ thống.");
                 }
+                if (this.companyService.existsByTaxCode(req.getTaxCode())) {
+                        throw new ConflictException("Mã số thuế " + req.getTaxCode().trim() + " đã được đăng ký trên hệ thống.");
+                }
                 User employer = this.userService.createEmployer(req, this.passwordEncoder.encode(req.getPassword()));
                 this.emailVerificationService.sendEmployerWelcome(employer);
                 this.notificationService.adminCompanyPending(employer.getCompany(), false);

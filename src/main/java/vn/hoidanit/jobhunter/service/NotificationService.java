@@ -146,6 +146,24 @@ public class NotificationService {
     }
 
     /** A company entered the review queue (new employer, or an edited rejected profile). */
+    /** An approved company changed its name, tax code or licence: it stays online, the admin is asked to check. */
+    public void adminCompanyChanged(Company company) {
+        List<String> to = adminRecipients();
+        if (to.isEmpty()) {
+            return;
+        }
+        Map<String, String> details = new LinkedHashMap<>();
+        details.put("Công ty", company.getName());
+        details.put("Mã số thuế", company.getTaxCode() == null ? "Chưa có" : company.getTaxCode());
+        details.put("Giấy phép", company.getLicenseFile() == null ? "Chưa có" : "Đã tải lên");
+        Notice notice = Notice.of("Công ty đổi thông tin xác minh", "quản trị viên",
+                company.getName() + " vừa đổi tên, mã số thuế hoặc giấy phép kinh doanh. Công ty vẫn đang hiển thị, hãy kiểm tra lại.",
+                "Mở danh sách công ty", "/admin/company", ADMIN_REASON).details(details);
+        for (String address : to) {
+            this.emailService.sendNotice(address, "Công ty đổi thông tin xác minh: " + company.getName(), notice);
+        }
+    }
+
     public void adminCompanyPending(Company company, boolean resubmitted) {
         List<String> to = adminRecipients();
         if (to.isEmpty()) {
@@ -154,6 +172,8 @@ public class NotificationService {
         Map<String, String> details = new LinkedHashMap<>();
         details.put("Công ty", company.getName());
         details.put("Địa chỉ", company.getAddress() == null ? "—" : company.getAddress());
+        details.put("Mã số thuế", company.getTaxCode() == null ? "Chưa có" : company.getTaxCode());
+        details.put("Số điện thoại", company.getPhone() == null ? "Chưa có" : company.getPhone());
         details.put("Liên hệ", this.userRepository.findByCompany(company).stream()
                 .map(user -> user.getName() + " (" + user.getEmail() + ")").collect(Collectors.joining(", ")));
         Notice notice = Notice.of(

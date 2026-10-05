@@ -149,14 +149,14 @@
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"companyName\": \"Công ty TNHH Ví Dụ\",\n  \"companyAddress\": \"Quận 1, TP. Hồ Chí Minh\",\n  \"name\": \"Trần Thu Hà\",\n  \"email\": \"hr@vidu.example.com\",\n  \"password\": \"123456\"\n}",
+                            "raw": "{\n  \"companyName\": \"Công ty TNHH Ví Dụ\",\n  \"companyAddress\": \"Quận 1, TP. Hồ Chí Minh\",\n  \"name\": \"Trần Thu Hà\",\n  \"email\": \"hr@vidu.example.com\",\n  \"password\": \"123456\",\n  \"taxCode\": \"0312345678\",\n  \"phone\": \"0901234567\",\n  \"website\": \"https://vidu.example.com\",\n  \"acceptTerms\": true\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
                                 }
                             }
                         },
-                        "description": "Creates an unapproved company and an HR user. The employer can sign in and see the admin area, but cannot post jobs until an admin runs \"Companies / Approve company\"."
+                        "description": "Creates an unapproved company and an HR user. The employer can sign in and see the admin area, but cannot post jobs until an admin runs \"Companies / Approve company\". Needs taxCode (10 digits, or 13 as 0123456789-001; unique, 409 if used), phone, and acceptTerms=true (400 otherwise); website is optional."
                     }
                 },
                 {
@@ -368,6 +368,24 @@
                             ]
                         },
                         "description": "Signed-in, not yet verified account. 429 if asked again within a minute, 409 when already verified."
+                    }
+                },
+                {
+                    "name": "Accept employer terms",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/me/terms",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "me",
+                                "terms"
+                            ]
+                        },
+                        "description": "Employer accounts only (403 for anyone without a company). Records that the account accepted the current terms of service; the login payload has termsRequired=true until then, and posting a job is refused."
                     }
                 }
             ]
@@ -681,7 +699,7 @@
                                 "approve"
                             ]
                         },
-                        "description": "SUPER_ADMIN only. Lets the employer of that company post jobs. To reject, delete the company instead."
+                        "description": "SUPER_ADMIN only. Lets the employer of that company post jobs. To reject, delete the company instead. Refused (400, with the list) while the employer email is unverified, the tax code is missing or duplicated, or no licence was uploaded. See \"Company verification checklist\"."
                     }
                 },
                 {
@@ -732,6 +750,44 @@
                                 "{{companyId}}"
                             ]
                         }
+                    }
+                },
+                {
+                    "name": "Company verification checklist",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies/{{companyId}}/verification",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies",
+                                "{{companyId}}",
+                                "verification"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN or an employer of that company (403 otherwise). Tax code, phone, website, the employer accounts (email verified, free mail, same domain as the website) and a checklist with a score. Required checks must pass before approve works."
+                    }
+                },
+                {
+                    "name": "Company business licence (file)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/companies/{{companyId}}/license",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "companies",
+                                "{{companyId}}",
+                                "license"
+                            ]
+                        },
+                        "description": "SUPER_ADMIN or an employer of that company. Streams the licence the employer uploaded with POST /files folder=company-doc (PDF or image); it has no public URL."
                     }
                 }
             ]
@@ -1690,7 +1746,7 @@
                                 }
                             ]
                         },
-                        "description": "folder: resume (pdf, doc, docx, odt, rtf, jpg, jpeg, png, webp) | company (jpg/jpeg/png/webp) | avatar (jpg/jpeg/png/webp only). The first bytes of the file are checked against its extension. Max 5 MB (413 above). Returns the stored fileName. Logos and avatars are public at /storage/company/<file> and /storage/avatar/<file>; CVs are never public, open them through \"Resumes / Open resume document (CV)\". Needs hoidanit.upload-file.base-uri (env UPLOAD_BASE_URI) pointing at a local folder."
+                        "description": "folder: resume (pdf, doc, docx, odt, rtf, jpg, jpeg, png, webp) | company (jpg/jpeg/png/webp, public) | company-doc (pdf, jpg, jpeg, png, webp; business licence, private, employers only) | avatar (jpg/jpeg/png/webp only). The first bytes of the file are checked against its extension. Max 5 MB (413 above). Returns the stored fileName. Logos and avatars are public at /storage/company/<file> and /storage/avatar/<file>; CVs are never public, open them through \"Resumes / Open resume document (CV)\". Needs hoidanit.upload-file.base-uri (env UPLOAD_BASE_URI) pointing at a local folder."
                     }
                 },
                 {

@@ -23,6 +23,8 @@ class EmployerTermsTests {
         req.setName("Hà");
         req.setEmail("hr@acme.vn");
         req.setPassword("secret1");
+        req.setTaxCode("0312345678");
+        req.setPhone("0901234567");
         req.setAcceptTerms(accept);
         return req;
     }

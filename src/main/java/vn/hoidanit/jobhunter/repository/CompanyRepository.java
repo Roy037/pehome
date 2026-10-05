@@ -11,4 +11,8 @@ public interface CompanyRepository extends JpaRepository<Company, Long>,
                 JpaSpecificationExecutor<Company> {
     boolean existsByNameIgnoreCase(String name);
 
+    boolean existsByTaxCode(String taxCode);
+
+    boolean existsByTaxCodeAndIdNot(String taxCode, long id);
+
 }

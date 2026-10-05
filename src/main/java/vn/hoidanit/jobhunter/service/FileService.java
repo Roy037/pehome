@@ -109,14 +109,25 @@ public class FileService {
         return !m.matches() || Long.parseLong(m.group(1)) == userId;
     }
 
+    /** The user id carried in a stored name (`<time>-u<id>-<name>`), or null for names without one. */
+    public static Long uploaderOf(String storedName) {
+        java.util.regex.Matcher m = OWNED.matcher(storedName == null ? "" : storedName);
+        return m.matches() ? Long.parseLong(m.group(1)) : null;
+    }
+
     public ResponseEntity<Resource> serveResume(String storedName) throws StorageException {
+        return servePrivate("resume", storedName);
+    }
+
+    /** Streams a file of a private folder (the caller has already decided that this person may see it). */
+    public ResponseEntity<Resource> servePrivate(String folder, String storedName) throws StorageException {
         if (storedName == null || !storedName.matches("[A-Za-z0-9._-]+") || storedName.contains("..")) {
-            throw new StorageException("Tệp CV không hợp lệ.");
+            throw new StorageException("Tên tệp không hợp lệ.");
         }
         try {
-            long length = getFileLength(storedName, "resume");
+            long length = getFileLength(storedName, folder);
             if (length == 0) {
-                throw new ResourceNotFoundException("Không tìm thấy tệp CV (có thể đã bị xoá).");
+                throw new ResourceNotFoundException("Không tìm thấy tệp (có thể đã bị xoá).");
             }
             String extension = FileSignature.extensionOf(storedName);
             MediaType type = MediaType.parseMediaType(CV_TYPES.getOrDefault(extension, "application/octet-stream"));
@@ -130,9 +141,9 @@ public class FileService {
                     .cacheControl(CacheControl.noStore().cachePrivate())
                     .contentLength(length)
                     .contentType(type)
-                    .body(getResource(storedName, "resume"));
+                    .body(getResource(storedName, folder));
         } catch (URISyntaxException | FileNotFoundException e) {
-            throw new StorageException("Không đọc được tệp CV.");
+            throw new StorageException("Không đọc được tệp.");
         }
     }
 }

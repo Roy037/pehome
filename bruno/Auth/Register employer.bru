@@ -16,10 +16,14 @@ body:json {
     "companyAddress": "Quận 1, TP. Hồ Chí Minh",
     "name": "Trần Thu Hà",
     "email": "hr@vidu.example.com",
-    "password": "123456"
+    "password": "123456",
+    "taxCode": "0312345678",
+    "phone": "0901234567",
+    "website": "https://vidu.example.com",
+    "acceptTerms": true
   }
 }
 
 docs {
-  Creates an unapproved company and an HR user. The employer can sign in and see the admin area, but cannot post jobs until an admin runs "Companies / Approve company".
+  Creates an unapproved company and an HR user. The employer can sign in and see the admin area, but cannot post jobs until an admin runs "Companies / Approve company". Needs taxCode (10 digits, or 13 as 0123456789-001; unique, 409 if used), phone, and acceptTerms=true (400 otherwise); website is optional.
 }

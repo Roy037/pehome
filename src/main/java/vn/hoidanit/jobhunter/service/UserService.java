@@ -157,6 +157,9 @@ public class UserService {
         Company company = new Company();
         company.setName(req.getCompanyName().trim());
         company.setAddress(req.getCompanyAddress().trim());
+        company.setTaxCode(req.getTaxCode().trim());
+        company.setPhone(req.getPhone().trim());
+        company.setWebsite(req.getWebsite());
         company.setApproved(false);
         company = this.companyService.handleCreateCompany(company);
 
