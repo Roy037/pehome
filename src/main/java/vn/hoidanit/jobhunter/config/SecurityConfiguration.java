@@ -49,6 +49,8 @@ public class SecurityConfiguration {
                 "/api/v1/subscribers/unsubscribe", "/api/v1/auth/oauth/**",
                 // Only logos and avatars are public files; CVs (/storage/resume) are not served at all, see ResumeController#document.
                 "/storage/company/**", "/storage/avatar/**", "/mail/**",
+                // link-preview pages for shared jobs and companies
+                "/share/**",
                 // the container's error dispatch: the status was already decided, do not turn it into a 401/403
                 "/error"
         };

@@ -24,7 +24,7 @@ public class PermissionInterceptorConfiguration implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         String[] whiteList = {
                 "/", "/error", "/api/v1/auth/**", "/storage/company/**", "/storage/avatar/**", "/api/v1/files",
-                "/api/v1/me/**", "/api/v1/plans", "/api/v1/payments/**"
+                "/api/v1/me/**", "/api/v1/plans", "/api/v1/payments/**", "/share/**"
         };
         // runs first and for every API call, including the public list endpoints the permission check skips
         registry.addInterceptor(new FilterGuardInterceptor()).addPathPatterns("/api/v1/**");

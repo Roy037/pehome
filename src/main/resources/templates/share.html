@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title} + ' | itjobs'">itjobs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" th:content="${description}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="itjobs">
+    <meta property="og:title" th:content="${title}">
+    <meta property="og:description" th:content="${description}">
+    <meta property="og:image" th:content="${image}">
+    <meta property="og:url" th:content="${target}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" th:content="${title}">
+    <meta name="twitter:description" th:content="${description}">
+    <meta name="twitter:image" th:content="${image}">
+    <link rel="canonical" th:href="${target}">
+    <script th:inline="javascript">window.location.replace([[${target}]]);</script>
+    <noscript><meta http-equiv="refresh" th:attr="content='0;url=' + ${target}"></noscript>
+</head>
+<body>
+<p><a th:href="${target}" th:text="${title}">itjobs</a></p>
+</body>
+</html>
