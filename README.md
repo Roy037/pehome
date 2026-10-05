@@ -1,5 +1,7 @@
 # 🚀 Java Spring RESTful APIs - Xây Dựng Backend với Spring Boot
 
+> **Cài đặt và chạy trên Windows (kèm Mac, Linux):** xem [HUONG-DAN-CAI-DAT.md](HUONG-DAN-CAI-DAT.md).
+
 This is the **starter project** for the **Java Spring RESTful APIs - Xây Dựng Backend với Spring Boot** course by **Hỏi Dân IT**.
 
 ---
