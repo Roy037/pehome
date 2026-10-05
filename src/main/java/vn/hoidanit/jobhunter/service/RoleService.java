@@ -35,6 +35,7 @@ public class RoleService {
     }
 
     public Role create(Role r) {
+        r.setId(0); // a create never replaces an existing row, whatever id the request body carries
         // check permissions
         if (r.getPermissions() != null) {
             List<Long> reqPermissions = r.getPermissions()

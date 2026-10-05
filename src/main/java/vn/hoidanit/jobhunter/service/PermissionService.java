@@ -34,6 +34,7 @@ public class PermissionService {
     }
 
     public Permission create(Permission p) {
+        p.setId(0); // a create never replaces an existing row, whatever id the request body carries
         return this.permissionRepository.save(p);
     }
 

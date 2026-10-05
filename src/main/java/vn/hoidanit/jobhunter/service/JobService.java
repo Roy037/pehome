@@ -78,12 +78,17 @@ public class JobService {
     }
 
     public ResCreateJobDTO create(Job j) throws PermissionException, IdInvalidException {
+        j.setId(0); // a create never replaces an existing row, whatever id the request body carries
         checkDates(j);
         checkSalary(j);
         Company mine = this.userService.currentUserCompany();
         if (mine != null) {
             if (!mine.isApproved()) {
                 throw new PermissionException("Công ty của bạn đang chờ quản trị viên duyệt, chưa thể đăng tin.");
+            }
+            User me = this.userService.currentUserOrNull();
+            if (me != null && !User.TERMS_VERSION.equals(me.getTermsVersion())) {
+                throw new PermissionException("Bạn cần đồng ý Điều khoản sử dụng dành cho nhà tuyển dụng trước khi đăng tin.");
             }
             j.setCompany(mine);
         }

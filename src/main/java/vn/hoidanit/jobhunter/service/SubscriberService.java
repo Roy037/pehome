@@ -48,6 +48,7 @@ public class SubscriberService {
     }
 
     public Subscriber create(Subscriber subs) {
+        subs.setId(0); // a create never replaces an existing row, whatever id the request body carries
         // check skills
         if (subs.getSkills() != null) {
             List<Long> reqSkills = subs.getSkills()

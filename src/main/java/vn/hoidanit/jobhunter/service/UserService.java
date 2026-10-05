@@ -4,6 +4,7 @@ import vn.hoidanit.jobhunter.repository.PlanOrderRepository;
 import vn.hoidanit.jobhunter.repository.ResumeRepository;
 import vn.hoidanit.jobhunter.util.error.ConflictException;
 import vn.hoidanit.jobhunter.util.error.ResourceNotFoundException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -166,6 +167,16 @@ public class UserService {
         user.setRole(hr);
         user.setCompany(company);
         user.setEmailVerified(false);
+        user.setTermsVersion(User.TERMS_VERSION);
+        user.setTermsAcceptedAt(Instant.now());
+        return this.userRepository.save(user);
+    }
+
+    /** An employer account that signed up before the terms existed (or before they changed) accepts the current version. */
+    @Transactional
+    public User acceptTerms(User user) {
+        user.setTermsVersion(User.TERMS_VERSION);
+        user.setTermsAcceptedAt(Instant.now());
         return this.userRepository.save(user);
     }
 
@@ -179,6 +190,7 @@ public class UserService {
     }
 
     public User handleCreateUser(User user) {
+        user.setId(0); // a create never replaces an existing row, whatever id the request body carries
         if (user.getCompany() != null) {
             Optional<Company> companyOptional = this.companyService.findById(user.getCompany().getId());
             user.setCompany(companyOptional.isPresent() ? companyOptional.get() : null);

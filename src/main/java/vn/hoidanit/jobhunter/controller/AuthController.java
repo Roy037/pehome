@@ -331,4 +331,14 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.CREATED)
                                 .body(this.userService.convertToResCreateUserDTO(employer));
         }
+
+        @PostMapping("/me/terms")
+        @ApiMessage("An employer accepts the current terms of service")
+        public ResponseEntity<ResLoginDTO.UserLogin> acceptTerms() throws IdInvalidException, PermissionException {
+                User me = this.userService.handleGetCurrentUser();
+                if (me.getCompany() == null) {
+                        throw new PermissionException("Điều khoản này chỉ áp dụng cho tài khoản nhà tuyển dụng.");
+                }
+                return ResponseEntity.ok().body(ResLoginDTO.UserLogin.from(this.userService.acceptTerms(me)));
+        }
 }

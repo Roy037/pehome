@@ -29,12 +29,14 @@ public class ResLoginDTO {
         private CompanyLogin company;
         private String avatar;
         private boolean emailVerified;
+        // an employer who has not accepted the current terms of service yet: the site asks before anything else
+        private boolean termsRequired;
 
         public static UserLogin from(User user) {
             Company c = user.getCompany();
             return new UserLogin(user.getId(), user.getEmail(), user.getName(), user.getRole(),
                     c == null ? null : new CompanyLogin(c.getId(), c.getName(), c.isApproved(), c.getRejectionReason()), user.getAvatar(),
-                    user.isEmailVerified());
+                    user.isEmailVerified(), c != null && !User.TERMS_VERSION.equals(user.getTermsVersion()));
         }
     }
 

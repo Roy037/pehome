@@ -139,6 +139,7 @@ public class CompanyService {
     }
 
     public Company handleCreateCompany(Company company) {
+        company.setId(0); // a create never replaces an existing row, whatever id the request body carries
         copyProfile(company, company);
         return this.companyRepository.save(company);
     }

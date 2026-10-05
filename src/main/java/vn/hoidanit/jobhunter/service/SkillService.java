@@ -31,6 +31,7 @@ public class SkillService {
     }
 
     public Skill createSkill(Skill s) {
+        s.setId(0); // a create never replaces an existing row, whatever id the request body carries
         return this.skillRepository.save(s);
     }
 

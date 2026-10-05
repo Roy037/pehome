@@ -285,6 +285,7 @@ public class ResumeService {
     }
 
     public ResCreateResumeDTO create(Resume resume) throws IdInvalidException {
+        resume.setId(0); // a create never replaces an existing row, whatever id the request body carries
         checkCvSource(resume);
         if (resume.getCoverLetter() != null) {
             String letter = resume.getCoverLetter().trim();

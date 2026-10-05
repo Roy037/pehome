@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.domain.request;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -28,4 +29,7 @@ public class ReqEmployerRegisterDTO {
     @NotBlank(message = "Mật khẩu không được để trống")
     @Size(min = 6, max = 72, message = "Mật khẩu từ 6 đến 72 ký tự")
     private String password;
+
+    @AssertTrue(message = "Bạn cần đồng ý Điều khoản sử dụng dành cho nhà tuyển dụng")
+    private boolean acceptTerms;
 }
