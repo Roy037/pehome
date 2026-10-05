@@ -1,0 +1,21 @@
+meta {
+  name: Verify e-mail
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/auth/verify-email
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "token": "token-from-the-email-link"
+  }
+}
+
+docs {
+  Public. The token comes from the link /xac-thuc-email?token=... in the welcome e-mail (valid 48 hours). Using it twice still answers 200.
+}

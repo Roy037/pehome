@@ -1,0 +1,19 @@
+meta {
+  name: Check if I already applied
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/resumes/check-applied?jobId={{jobId}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  jobId: {{jobId}}
+}
+
+docs {
+  Signed-in candidate. Returns {"applied": true|false}. Applying twice to the same job gives 409; a closed or expired job gives 400.
+}

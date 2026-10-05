@@ -1,0 +1,25 @@
+meta {
+  name: Create user
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/users
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Nhân viên HR",
+    "email": "hr@example.com",
+    "password": "123456",
+    "gender": "MALE",
+    "address": "Hà Nội",
+    "age": 28,
+    "role": {
+      "id": 1
+    }
+  }
+}

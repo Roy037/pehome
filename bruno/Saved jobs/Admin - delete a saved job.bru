@@ -1,0 +1,15 @@
+meta {
+  name: Admin: delete a saved job
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/saved-jobs/{{savedJobId}}
+  body: none
+  auth: inherit
+}
+
+docs {
+  Deletes by saved-job record id (not job id).
+}

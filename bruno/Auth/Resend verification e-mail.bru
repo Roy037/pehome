@@ -1,0 +1,15 @@
+meta {
+  name: Resend verification e-mail
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/auth/resend-verification
+  body: none
+  auth: inherit
+}
+
+docs {
+  Signed-in, not yet verified account. 429 if asked again within a minute, 409 when already verified.
+}

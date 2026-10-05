@@ -1,7 +1,9 @@
 package vn.hoidanit.jobhunter.domain;
 
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +23,7 @@ import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.constant.ResumeStateEnum;
 
 @Entity
-@Table(name = "resumes")
+@Table(name = "resumes", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "job_id" }))
 @Getter
 @Setter
 public class Resume {
@@ -28,7 +31,7 @@ public class Resume {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @NotBlank(message = "email không được để trống")
+    // Always set from the signed-in user by the server.
     private String email;
 
     @NotBlank(message = "url không được để trống (upload cv chưa thành công)")
@@ -36,6 +39,26 @@ public class Resume {
 
     @Enumerated(EnumType.STRING)
     private ResumeStateEnum status;
+
+    @Size(max = 3000, message = "Thư xin việc tối đa 3000 ký tự")
+    @Column(columnDefinition = "TEXT")
+    private String coverLetter;
+
+    // Employer-side evaluation: never shown to the candidate.
+    private Integer score;
+
+    @Column(columnDefinition = "TEXT")
+    private String remark;
+
+    // Set when the application moves to INTERVIEW; shown to the candidate.
+    private Instant interviewAt;
+
+    @Column(length = 500)
+    private String meetingLink;
+
+    // Message the employer attaches to a decision (interview / accepted / rejected); shown to the candidate.
+    @Column(columnDefinition = "TEXT")
+    private String decisionNote;
 
     private Instant createdAt;
     private Instant updatedAt;

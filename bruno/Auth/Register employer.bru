@@ -1,0 +1,25 @@
+meta {
+  name: Register employer
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/register-employer
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "companyName": "Công ty TNHH Ví Dụ",
+    "companyAddress": "Quận 1, TP. Hồ Chí Minh",
+    "name": "Trần Thu Hà",
+    "email": "hr@vidu.example.com",
+    "password": "123456"
+  }
+}
+
+docs {
+  Creates an unapproved company and an HR user. The employer can sign in and see the admin area, but cannot post jobs until an admin runs "Companies / Approve company".
+}

@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.config;
 
+import lombok.extern.slf4j.Slf4j;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -26,6 +27,7 @@ import com.nimbusds.jose.util.Base64;
 
 import vn.hoidanit.jobhunter.util.SecurityUtil;
 
+@Slf4j
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfiguration {
@@ -42,8 +44,13 @@ public class SecurityConfiguration {
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         String[] whiteList = {
                 "/",
-                "/api/v1/auth/login", "/api/v1/auth/refresh", "/storage/**", "/api/v1/auth/register",
-                "/api/v1/companies/**", "/api/v1/jobs/**", "/api/v1/email/**"
+                "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/register", "/api/v1/auth/register-employer",
+                "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password", "/api/v1/auth/verify-email",
+                "/api/v1/subscribers/unsubscribe", "/api/v1/auth/oauth/**",
+                // Only logos and avatars are public files; CVs (/storage/resume) are not served at all, see ResumeController#document.
+                "/storage/company/**", "/storage/avatar/**", "/mail/**",
+                // the container's error dispatch: the status was already decided, do not turn it into a 401/403
+                "/error"
         };
 
         http
@@ -55,6 +62,9 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.GET, "/api/v1/companies/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/jobs/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/skills/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/plans").permitAll()
+                                // VNPay's browser return and IPN (and the dev-only fake gateway) carry no login
+                                .requestMatchers("/api/v1/payments/**").permitAll()
                                 .anyRequest().authenticated())
 
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
@@ -94,7 +104,7 @@ public class SecurityConfiguration {
                 return jwtDecoder.decode(token);
 
             } catch (Exception e) {
-                System.out.println(">>> JWT error: " + e.getMessage());
+                log.debug("JWT rejected: {}", e.getMessage());
                 throw e;
             }
         };
@@ -106,6 +116,10 @@ public class SecurityConfiguration {
     }
 
     private SecretKey getSecretKey() {
+        if (jwtKey == null || jwtKey.isBlank()) {
+            throw new IllegalStateException(
+                    "JWT_SECRET is not set. Add it to .env (see .env.example) or to the run configuration's environment.");
+        }
         byte[] keyBytes = Base64.from(jwtKey).decode();
         return new SecretKeySpec(keyBytes, 0, keyBytes.length,
                 SecurityUtil.JWT_ALGORITHM.getName());

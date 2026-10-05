@@ -1,0 +1,15 @@
+meta {
+  name: My plan and usage
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/me/plan
+  body: none
+  auth: inherit
+}
+
+docs {
+  plan is null on the free tier. Includes limits and how much of them is used.
+}

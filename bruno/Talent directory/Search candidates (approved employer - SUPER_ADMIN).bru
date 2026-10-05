@@ -1,0 +1,23 @@
+meta {
+  name: Search candidates (approved employer / SUPER_ADMIN)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/talents?keyword=java&level=JUNIOR&skills=Java,Spring&page=1&size=10
+  body: none
+  auth: inherit
+}
+
+params:query {
+  keyword: java
+  level: JUNIOR
+  skills: Java,Spring
+  page: 1
+  size: 10
+}
+
+docs {
+  Only candidates who switched on 'visibleToEmployers' in their profile. Plain parameters only: keyword, level (INTERN..SENIOR), experience (NONE|LT1|Y1_3|Y3_5|GT5), industry, occupation, skills (comma separated, all required), page, size (max 50). No e-mail, goals or references in the list.
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Apply (create resume)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/resumes
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "url": "1790000000000-u2-cv.pdf",
+    "job": {
+      "id": "{{jobId}}"
+    },
+    "coverLetter": "Xin chào, tôi rất quan tâm đến vị trí này."
+  }
+}
+
+docs {
+  Any signed-in user. url is either a CV file you uploaded yourself (PDF, Word, ODT, RTF or image) (POST /files, folder=resume; the stored name carries your user id) or an https Google Drive / Dropbox / OneDrive link. coverLetter is optional (max 3000). The server ignores user/email/status in the body. 409 if you already applied; 400 if the job is inactive or past its end date or the CV source is not allowed. Employer accounts get 403. The job must be active, already started (startDate) and not past its end date.
+}

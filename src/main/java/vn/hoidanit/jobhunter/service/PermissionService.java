@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.hoidanit.jobhunter.domain.Permission;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.PermissionRepository;
@@ -51,17 +52,12 @@ public class PermissionService {
         return null;
     }
 
-    // public void delete(long id) {
-    // // delete permission_role
-    // Optional<Permission> permissionOptional =
-    // this.permissionRepository.findById(id);
-    // Permission currentPermission = permissionOptional.get();
-    // currentPermission.getRoles().forEach(role ->
-    // role.getPermissions().remove(currentPermission));
-
-    // // delete permission
-    // this.permissionRepository.delete(currentPermission);
-    // }
+    @Transactional
+    public void delete(long id) {
+        Permission permission = this.permissionRepository.findById(id).get();
+        permission.getRoles().forEach(role -> role.getPermissions().remove(permission));
+        this.permissionRepository.delete(permission);
+    }
 
     public ResultPaginationDTO getPermissions(Specification<Permission> spec, Pageable pageable) {
         Page<Permission> pPermissions = this.permissionRepository.findAll(spec, pageable);

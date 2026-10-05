@@ -1,0 +1,26 @@
+meta {
+  name: Register
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Nguyễn Minh Anh",
+    "email": "minhanh@example.com",
+    "password": "123456",
+    "age": 22,
+    "gender": "FEMALE",
+    "address": "TP. Hồ Chí Minh"
+  }
+}
+
+docs {
+  gender: MALE | FEMALE | OTHER
+}

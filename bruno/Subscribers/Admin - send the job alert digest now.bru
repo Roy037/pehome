@@ -1,0 +1,15 @@
+meta {
+  name: Admin: send the job alert digest now
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/subscribers/send-digest
+  body: none
+  auth: inherit
+}
+
+docs {
+  SUPER_ADMIN. Runs the same job the Monday 08:00 (Vietnam time) schedule runs; returns the number of e-mails queued. JOB_ALERT_CRON=- switches the schedule off.
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Dev: fake gateway order info
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/payments/mock/order?txnRef=…
+  body: none
+  auth: inherit
+}
+
+params:query {
+  txnRef: …
+}
+
+docs {
+  Only when PAYMENT_MOCK=true, otherwise 404.
+}

@@ -9,5 +9,6 @@ import vn.hoidanit.jobhunter.domain.Company;
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Long>,
                 JpaSpecificationExecutor<Company> {
+    boolean existsByNameIgnoreCase(String name);
 
 }

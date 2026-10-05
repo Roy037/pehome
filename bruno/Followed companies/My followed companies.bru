@@ -1,0 +1,15 @@
+meta {
+  name: My followed companies
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/me/followed-companies
+  body: none
+  auth: inherit
+}
+
+docs {
+  Only approved companies; newest follow first.
+}

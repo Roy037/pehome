@@ -1,0 +1,19 @@
+meta {
+  name: Unsubscribe (link in the digest)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/subscribers/unsubscribe?token=token-from-the-email
+  body: none
+  auth: none
+}
+
+params:query {
+  token: token-from-the-email
+}
+
+docs {
+  Public one-click unsubscribe used by the "Hủy nhận bản tin" link and the List-Unsubscribe header of the weekly digest. 400 for a tampered token; repeating it is harmless.
+}

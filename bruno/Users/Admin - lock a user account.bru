@@ -1,0 +1,15 @@
+meta {
+  name: Admin: lock a user account
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/users/1/lock
+  body: none
+  auth: inherit
+}
+
+docs {
+  SUPER_ADMIN only (permission USERS). The account cannot sign in, its refresh token is dropped and any token it already holds is refused (401). An admin account or your own cannot be locked (409).
+}

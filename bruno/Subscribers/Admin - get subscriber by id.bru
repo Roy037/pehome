@@ -1,0 +1,11 @@
+meta {
+  name: Admin: get subscriber by id
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/subscribers/{{subscriberId}}
+  body: none
+  auth: inherit
+}

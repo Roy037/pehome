@@ -1,0 +1,20 @@
+meta {
+  name: VNPay IPN (server to server)
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/payments/vnpay-ipn?vnp_TxnRef=…&vnp_SecureHash=…
+  body: none
+  auth: inherit
+}
+
+params:query {
+  vnp_TxnRef: …
+  vnp_SecureHash: …
+}
+
+docs {
+  Answers VNPay's own body: {"RspCode":"00","Message":"Confirm Success"}; 01 order not found, 02 already confirmed, 04 invalid amount, 97 invalid signature.
+}
