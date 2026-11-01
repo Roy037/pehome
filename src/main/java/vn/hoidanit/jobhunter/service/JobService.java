@@ -240,8 +240,6 @@ public class JobService {
         return job.getEndDate() != null && !job.getEndDate().isAfter(Instant.now());
     }
 
-    // ponytail: a company that already has more open jobs than its places (it posted them before the limit existed)
-    // keeps them; it just cannot open another until it closes some or buys a pack.
     private void assertRoomToOpen(Company company, long exceptJobId) throws PermissionException {
         Instant now = Instant.now();
         long open = this.jobRepository.countOpen(company.getId(), exceptJobId, now);

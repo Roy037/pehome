@@ -79,7 +79,6 @@ public class StatsService {
                 months());
     }
 
-    // ponytail: buckets the timestamps in Java so month edges follow Vietnam time; move to SQL GROUP BY if these tables get huge
     private List<ResAdminStatsDTO.Month> months() {
         YearMonth first = YearMonth.now(VN).minusMonths(MONTHS - 1);
         Instant since = first.atDay(1).atStartOfDay(VN).toInstant();
