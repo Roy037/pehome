@@ -1,0 +1,15 @@
+meta {
+  name: Company business licence (file)
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/companies/{{companyId}}/license
+  body: none
+  auth: inherit
+}
+
+docs {
+  SUPER_ADMIN or an employer of that company. Streams the licence the employer uploaded with POST /files folder=company-doc (PDF or image); it has no public URL.
+}

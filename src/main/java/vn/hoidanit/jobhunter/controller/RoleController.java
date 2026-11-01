@@ -1,5 +1,7 @@
 package vn.hoidanit.jobhunter.controller;
 
+import vn.hoidanit.jobhunter.util.error.ResourceNotFoundException;
+import vn.hoidanit.jobhunter.util.error.ConflictException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -35,7 +37,7 @@ public class RoleController {
     public ResponseEntity<Role> create(@Valid @RequestBody Role r) throws IdInvalidException {
         // check name
         if (this.roleService.existByName(r.getName())) {
-            throw new IdInvalidException("Role với name = " + r.getName() + " đã tồn tại");
+            throw new ConflictException("Role với name = " + r.getName() + " đã tồn tại");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(this.roleService.create(r));
     }
@@ -45,7 +47,7 @@ public class RoleController {
     public ResponseEntity<Role> update(@Valid @RequestBody Role r) throws IdInvalidException {
         // check id
         if (this.roleService.fetchById(r.getId()) == null) {
-            throw new IdInvalidException("Role với id = " + r.getId() + " không tồn tại");
+            throw new ResourceNotFoundException("Role với id = " + r.getId() + " không tồn tại");
         }
 
         // check name
@@ -62,7 +64,7 @@ public class RoleController {
     public ResponseEntity<Void> delete(@PathVariable("id") long id) throws IdInvalidException {
         // check id
         if (this.roleService.fetchById(id) == null) {
-            throw new IdInvalidException("Role với id = " + id + " không tồn tại");
+            throw new ResourceNotFoundException("Role với id = " + id + " không tồn tại");
         }
         this.roleService.delete(id);
         return ResponseEntity.ok().body(null);
@@ -82,7 +84,7 @@ public class RoleController {
 
         Role role = this.roleService.fetchById(id);
         if (role == null) {
-            throw new IdInvalidException("Resume với id = " + id + " không tồn tại");
+            throw new ResourceNotFoundException("Resume với id = " + id + " không tồn tại");
         }
 
         return ResponseEntity.ok().body(role);

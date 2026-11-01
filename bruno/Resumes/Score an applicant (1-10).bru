@@ -1,0 +1,22 @@
+meta {
+  name: Score an applicant (1-10)
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/resumes/{{resumeId}}/evaluation
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "score": 8,
+    "remark": "Nền tảng tốt, cần kiểm tra thêm về hệ thống."
+  }
+}
+
+docs {
+  Employer of the job's company or SUPER_ADMIN. score 1-10 is required; remark is optional (max 2000 chars). Never visible to the candidate.
+}

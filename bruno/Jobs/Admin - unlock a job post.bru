@@ -1,0 +1,15 @@
+meta {
+  name: Admin: unlock a job post
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/jobs/{{jobId}}/unlock
+  body: none
+  auth: inherit
+}
+
+docs {
+  SUPER_ADMIN.
+}

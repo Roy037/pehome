@@ -1,0 +1,20 @@
+meta {
+  name: Company reviews + rating summary (public)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/companies/{{companyId}}/reviews?page=1&size=5
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+  size: 5
+}
+
+docs {
+  Returns average, total, distribution {5..1}, meta and result.
+}

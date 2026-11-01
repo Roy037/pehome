@@ -1,5 +1,7 @@
 package vn.hoidanit.jobhunter.controller;
 
+import vn.hoidanit.jobhunter.util.error.ResourceNotFoundException;
+import vn.hoidanit.jobhunter.util.error.ConflictException;
 import org.springframework.web.bind.annotation.RestController;
 
 import vn.hoidanit.jobhunter.domain.User;
@@ -8,6 +10,7 @@ import vn.hoidanit.jobhunter.domain.response.ResUpdateUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.UserService;
+import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
@@ -46,8 +49,8 @@ public class UserController {
             throws IdInvalidException {
         boolean isEmailExist = this.userService.isEmailExist(postManUser.getEmail());
         if (isEmailExist) {
-            throw new IdInvalidException(
-                    "Email " + postManUser.getEmail() + "đã tồn tại, vui lòng sử dụng email khác.");
+            throw new ConflictException(
+                    "Email " + postManUser.getEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
         }
 
         String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
@@ -61,7 +64,7 @@ public class UserController {
     public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody User user) throws IdInvalidException {
         User ericUser = this.userService.handleUpdateUser(user);
         if (ericUser == null) {
-            throw new IdInvalidException("User với id = " + user.getId() + " không tồn tại");
+            throw new ResourceNotFoundException("User với id = " + user.getId() + " không tồn tại");
         }
         return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(ericUser));
     }
@@ -71,7 +74,7 @@ public class UserController {
     public ResponseEntity<ResUserDTO> getUserById(@PathVariable("id") long id) throws IdInvalidException {
         User fetchUser = this.userService.fetchUserById(id);
         if (fetchUser == null) {
-            throw new IdInvalidException("User với id = " + id + " không tồn tại");
+            throw new ResourceNotFoundException("User với id = " + id + " không tồn tại");
         }
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -88,13 +91,32 @@ public class UserController {
                 this.userService.fetchAllUser(spec, pageable));
     }
 
+    @PutMapping("/users/{id}/lock")
+    @ApiMessage("Lock a user account")
+    public ResponseEntity<ResUserDTO> lockUser(@PathVariable("id") long id) {
+        User user = this.userService.setLocked(id, true, SecurityUtil.getCurrentUserLogin().orElse(""));
+        return ResponseEntity.ok(this.userService.convertToResUserDTO(user));
+    }
+
+    @PutMapping("/users/{id}/unlock")
+    @ApiMessage("Unlock a user account")
+    public ResponseEntity<ResUserDTO> unlockUser(@PathVariable("id") long id) {
+        User user = this.userService.setLocked(id, false, SecurityUtil.getCurrentUserLogin().orElse(""));
+        return ResponseEntity.ok(this.userService.convertToResUserDTO(user));
+    }
+
     @DeleteMapping("/users/{id}")
     @ApiMessage("Delete a user")
     public ResponseEntity<Void> deleteUser(@PathVariable("id") long id)
             throws IdInvalidException {
         User currentUser = this.userService.fetchUserById(id);
         if (currentUser == null) {
-            throw new IdInvalidException("User với id = " + id + " không tồn tại");
+            throw new ResourceNotFoundException("User với id = " + id + " không tồn tại");
+        }
+
+        // an admin removing their own account would lock the system out of administration
+        if (currentUser.getEmail().equalsIgnoreCase(SecurityUtil.getCurrentUserLogin().orElse(""))) {
+            throw new ConflictException("Không thể tự xóa tài khoản đang đăng nhập.");
         }
 
         this.userService.handleDeleteUser(id);

@@ -1,0 +1,25 @@
+meta {
+  name: Admin: update review
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/reviews
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": "{{reviewId}}",
+    "userId": 1,
+    "companyId": "{{companyId}}",
+    "rating": 4,
+    "content": "Nội dung đã chỉnh sửa."
+  }
+}
+
+docs {
+  Updates rating and content of an existing review (user and company cannot change).
+}

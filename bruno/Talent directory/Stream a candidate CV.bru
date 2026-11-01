@@ -1,0 +1,15 @@
+meta {
+  name: Stream a candidate CV
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/talents/1/cv
+  body: none
+  auth: inherit
+}
+
+docs {
+  CV file of an opted-in candidate, same rules as the detail.
+}

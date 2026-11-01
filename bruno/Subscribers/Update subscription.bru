@@ -1,0 +1,27 @@
+meta {
+  name: Update subscription
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/subscribers
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 1,
+    "email": "admin@gmail.com",
+    "name": "Admin",
+    "skills": [
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Create an order (starts a payment)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/me/orders
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "plan": "STANDARD",
+    "method": "VNPAY"
+  }
+}
+
+docs {
+  method (optional, default VNPAY): MOMO, VNPAY, VIETQR, ZALOPAY, BANK or CARD. VNPAY/VIETQR/BANK/CARD go through VNPay (bank code is pre-selected); MOMO and ZALOPAY are only accepted when PAYMENT_MOCK=true. Unsupported method -> 400.
+}

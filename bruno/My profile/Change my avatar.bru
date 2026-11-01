@@ -1,0 +1,21 @@
+meta {
+  name: Change my avatar
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/me/profile/avatar
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "avatar": "file-name-from-upload-avatar.png"
+  }
+}
+
+docs {
+  Any signed-in account (also employers and admins). Upload the picture first with "Files / Upload avatar" and send the stored file name; an empty string removes the photo.
+}

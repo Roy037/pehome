@@ -1,0 +1,20 @@
+meta {
+  name: Upload avatar
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/files
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file()
+  folder: avatar
+}
+
+docs {
+  Images only (jpg, jpeg, png, webp). The UI limits it to 2 MB.
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Employer services (my company)
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/me/employer/services
+  body: none
+  auth: inherit
+}
+
+docs {
+  Employer accounts only (403 otherwise). Open jobs against the limit (3 free places plus running job packs), the talent unlock end date, pinned jobs, the products on sale with prices, and the last 20 orders of the company.
+}

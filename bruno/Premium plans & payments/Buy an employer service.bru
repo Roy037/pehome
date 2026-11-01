@@ -1,0 +1,23 @@
+meta {
+  name: Buy an employer service
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{baseUrl}}/me/employer/orders
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product": "JOB_PIN_7",
+    "jobId": "{{jobId}}",
+    "method": "VNPAY"
+  }
+}
+
+docs {
+  Approved company, accepted terms. product: JOB_PIN_7 | JOB_PIN_30 (jobId required: an open job of the company), JOB_SLOTS_5 (5 more open jobs for 30 days; packs run side by side), TALENT_30 (profile details and CVs in the talent directory for 30 days; buying again continues from the end). Same gateways and mock gateway as the candidate plans; the browser comes back to /admin/dich-vu.
+}

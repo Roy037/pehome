@@ -1,0 +1,41 @@
+meta {
+  name: Update job
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/jobs
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": "{{jobId}}",
+    "name": "Kỹ sư phần mềm Backend (Java)",
+    "location": "HOCHIMINH",
+    "salary": 20000000,
+    "quantity": 2,
+    "level": "MIDDLE",
+    "employmentType": "FULL_TIME",
+    "workMode": "HYBRID",
+    "description": "<p>Mô tả công việc</p><h3>Yêu cầu</h3><ul><li>Java, Spring Boot</li></ul>",
+    "startDate": "2026-10-01T00:00:00Z",
+    "endDate": "2026-11-30T00:00:00Z",
+    "active": true,
+    "company": {
+      "id": "{{companyId}}"
+    },
+    "skills": [
+      {
+        "id": 1
+      }
+    ],
+    "salaryMax": 30000000
+  }
+}
+
+docs {
+  salary is the monthly minimum in VND and salaryMax the maximum (optional; 0 or null = not given). salary 0 with no salaryMax means "thỏa thuận". 400 if salaryMax < salary or either is negative.
+}

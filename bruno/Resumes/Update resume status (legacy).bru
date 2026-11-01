@@ -1,0 +1,22 @@
+meta {
+  name: Update resume status (legacy)
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{baseUrl}}/resumes
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 1,
+    "status": "REVIEWING"
+  }
+}
+
+docs {
+  Old endpoint kept for compatibility: same pipeline rules as PUT /resumes/{id}/status but never e-mails the candidate.
+}

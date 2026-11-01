@@ -1,0 +1,20 @@
+meta {
+  name: Create permission
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/permissions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Get reviews with pagination",
+    "apiPath": "/api/v1/reviews",
+    "method": "GET",
+    "module": "REVIEWS"
+  }
+}

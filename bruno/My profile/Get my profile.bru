@@ -1,0 +1,15 @@
+meta {
+  name: Get my profile
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/me/profile
+  body: none
+  auth: inherit
+}
+
+docs {
+  Signed-in user. Returns an empty profile (with name, email, avatar) if none saved yet.
+}

@@ -1,0 +1,11 @@
+meta {
+  name: Fetch company by id (public)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/companies/{{companyId}}
+  body: none
+  auth: none
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Admin: fetch all saved jobs
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/saved-jobs?page=1&size=10&sort=createdAt,desc
+  body: none
+  auth: inherit
+}
+
+params:query {
+  page: 1
+  size: 10
+  sort: createdAt,desc
+}
+
+docs {
+  Needs the SAVED_JOBS/GET permission. Filter by user.name, job.name or job.company.name.
+}

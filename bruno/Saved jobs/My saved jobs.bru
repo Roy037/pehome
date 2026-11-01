@@ -1,0 +1,11 @@
+meta {
+  name: My saved jobs
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/me/saved-jobs
+  body: none
+  auth: inherit
+}

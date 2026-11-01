@@ -1,0 +1,15 @@
+meta {
+  name: Open resume document (CV)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/resumes/{{resumeId}}/document
+  body: none
+  auth: inherit
+}
+
+docs {
+  Streams the CV with the type of the stored file (PDF and images inline, Word/ODT/RTF as an attachment). Allowed for the applicant, an employer of the job's company, or SUPER_ADMIN; anyone else gets 403, no token gets 401. CV files have no public URL.
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Candidate detail
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/talents/1
+  body: none
+  auth: inherit
+}
+
+docs {
+  E-mail, goals, work history, skills and CV name. References are never returned. 404 when the candidate opted out or the account is locked; 403 for a company that is not approved.
+}

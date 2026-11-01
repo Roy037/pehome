@@ -1,0 +1,15 @@
+meta {
+  name: My review of a company
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/me/reviews/{{companyId}}
+  body: none
+  auth: inherit
+}
+
+docs {
+  data is null when you have not reviewed it.
+}

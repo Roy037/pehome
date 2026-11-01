@@ -1,0 +1,19 @@
+meta {
+  name: MoMo result (after redirect)
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/me/orders/momo-result?txnRef=…
+  body: none
+  auth: inherit
+}
+
+params:query {
+  txnRef: …
+}
+
+docs {
+  Signed-in owner of the order. Asks MoMo for the order status and settles it; the site calls this when the browser comes back from MoMo.
+}

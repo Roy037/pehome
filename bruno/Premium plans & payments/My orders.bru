@@ -1,0 +1,15 @@
+meta {
+  name: My orders
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/me/orders
+  body: none
+  auth: inherit
+}
+
+docs {
+  Newest first. A payment started but not finished within 15 minutes reads EXPIRED.
+}

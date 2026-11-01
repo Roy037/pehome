@@ -1,0 +1,15 @@
+meta {
+  name: Admin: platform statistics
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/admin/stats
+  body: none
+  auth: inherit
+}
+
+docs {
+  SUPER_ADMIN only (permission STATS). Users (candidate/employer split, active Premium passes), companies, jobs (open/locked/reports), applications, revenue (total, last 30 days, per plan) and a 6-month series of signups, applications and revenue in Vietnam time.
+}

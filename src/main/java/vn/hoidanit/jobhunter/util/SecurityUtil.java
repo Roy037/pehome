@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.util;
 
+import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import com.nimbusds.jose.util.Base64;
 
 import vn.hoidanit.jobhunter.domain.response.ResLoginDTO;
 
+@Slf4j
 @Service
 public class SecurityUtil {
 
@@ -104,13 +106,23 @@ public class SecurityUtil {
                 JWT_ALGORITHM.getName());
     }
 
+    /** SHA-256 hex of a refresh token: the database keeps this instead of the token, so a leaked table cannot be replayed. */
+    public static String sha256(String value) {
+        try {
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256").digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return java.util.HexFormat.of().formatHex(digest);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     public Jwt checkValidRefreshToken(String token){
      NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(
                 getSecretKey()).macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
                 try {
                      return jwtDecoder.decode(token);
                 } catch (Exception e) {
-                    System.out.println(">>> Refresh Token error: " + e.getMessage());
+                    log.debug("Refresh token rejected: {}", e.getMessage());
                     throw e;
                 }
     }

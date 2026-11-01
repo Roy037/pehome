@@ -1,0 +1,17 @@
+meta {
+  name: Fetch skills (public)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/skills?page=1&size=100&sort=name,asc
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+  size: 100
+  sort: name,asc
+}

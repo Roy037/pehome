@@ -1,0 +1,23 @@
+meta {
+  name: Report a job post
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/me/job-reports
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "jobId": "{{jobId}}",
+    "reason": "SCAM",
+    "detail": "Yêu cầu đóng phí hồ sơ"
+  }
+}
+
+docs {
+  Any signed-in user. reason: SCAM | MISLEADING | DUPLICATE | EXPIRED | INAPPROPRIATE | OTHER. detail is optional (max 1000). 409 if you already reported this job.
+}

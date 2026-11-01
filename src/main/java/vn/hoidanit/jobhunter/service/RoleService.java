@@ -26,11 +26,16 @@ public class RoleService {
         this.permissionRepository = permissionRepository;
     }
 
+    public Role fetchByName(String name) {
+        return this.roleRepository.findByName(name);
+    }
+
     public boolean existByName(String name) {
         return this.roleRepository.existsByName(name);
     }
 
     public Role create(Role r) {
+        r.setId(0); // a create never replaces an existing row, whatever id the request body carries
         // check permissions
         if (r.getPermissions() != null) {
             List<Long> reqPermissions = r.getPermissions()

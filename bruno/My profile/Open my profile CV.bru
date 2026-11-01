@@ -1,0 +1,15 @@
+meta {
+  name: Open my profile CV
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/me/profile/cv
+  body: none
+  auth: inherit
+}
+
+docs {
+  Streams the CV saved in my own profile. 400 if none is saved.
+}

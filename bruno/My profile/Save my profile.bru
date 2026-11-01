@@ -1,0 +1,65 @@
+meta {
+  name: Save my profile
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/me/profile
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Nguyễn Minh Anh",
+    "avatar": "",
+    "headline": "Frontend Developer",
+    "experience": "Y1_3",
+    "level": "JUNIOR",
+    "industry": "Phần mềm & Dịch vụ CNTT",
+    "occupation": "Lập trình Frontend",
+    "jobAlert": true,
+    "shortGoals": [
+      "Thành thạo React và TypeScript"
+    ],
+    "longGoals": [
+      "Trở thành Tech Lead"
+    ],
+    "experiences": [
+      {
+        "company": "ACME Software",
+        "title": "Thực tập sinh Frontend",
+        "fromMonth": "2023-05",
+        "toMonth": "2023-08",
+        "current": false,
+        "description": "Xây dựng giao diện với React."
+      }
+    ],
+    "skills": [
+      {
+        "name": "React",
+        "level": 4
+      },
+      {
+        "name": "Giao tiếp tiếng Anh",
+        "level": 3
+      }
+    ],
+    "references": [
+      {
+        "name": "Nguyễn Văn B",
+        "title": "Engineering Manager",
+        "company": "ACME Software",
+        "phone": "0900000000",
+        "email": "b@acme.example.com"
+      }
+    ],
+    "cvUrl": "",
+    "cvName": ""
+  }
+}
+
+docs {
+  Replaces the whole profile. experience: NONE | LT1 | Y1_3 | Y3_5 | GT5. level: INTERN | FRESHER | JUNIOR | MIDDLE | SENIOR. Months are "YYYY-MM". skill level 1-5. Limits: 10 goals each, 20 experiences, 30 skills, 5 references. avatar / cvUrl are fileName values from "Files"; blank removes them.
+}

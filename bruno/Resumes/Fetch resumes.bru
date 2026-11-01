@@ -1,0 +1,16 @@
+meta {
+  name: Fetch resumes
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/resumes?page=1&size=10
+  body: none
+  auth: inherit
+}
+
+params:query {
+  page: 1
+  size: 10
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Admin: dismiss a report
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/job-reports/{{reportId}}
+  body: none
+  auth: inherit
+}
+
+docs {
+  SUPER_ADMIN. Deletes the report; its author may report the post again.
+}

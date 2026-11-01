@@ -1,0 +1,24 @@
+meta {
+  name: Admin: create review
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/reviews
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "userId": 1,
+    "companyId": "{{companyId}}",
+    "rating": 5,
+    "content": "Môi trường làm việc tốt."
+  }
+}
+
+docs {
+  Needs the REVIEWS/POST permission. One review per user per company.
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Social sign-in providers
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/auth/oauth/providers
+  body: none
+  auth: none
+}
+
+docs {
+  Public. Which of Google / Facebook / LinkedIn have keys on the server (enabled=true). Sign-in itself is a browser redirect: open {{baseUrl}}/auth/oauth/google/authorize?next=/ in a browser, not here.
+}

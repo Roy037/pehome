@@ -1,0 +1,25 @@
+meta {
+  name: Update resume status (pipeline)
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/resumes/{{resumeId}}/status
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "status": "INTERVIEW",
+    "interviewAt": "2030-01-15T09:00:00.000Z",
+    "meetingLink": "https://meet.google.com/abc-defg-hij",
+    "decisionNote": "",
+    "notify": true
+  }
+}
+
+docs {
+  Employer of the job's company or SUPER_ADMIN. PENDING -> REVIEWING | SHORTLISTED | REJECTED; REVIEWING -> SHORTLISTED | REJECTED; SHORTLISTED -> INTERVIEW | REJECTED; INTERVIEW -> ACCEPTED | REJECTED. INTERVIEW needs a future interviewAt and an https meetingLink. notify=false skips the candidate e-mail. 400 on a forbidden transition; ACCEPTED/REJECTED are final for employers.
+}

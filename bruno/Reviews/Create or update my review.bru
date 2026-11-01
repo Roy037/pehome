@@ -1,0 +1,22 @@
+meta {
+  name: Create or update my review
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/me/reviews/{{companyId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rating": 5,
+    "content": "Quy trình phỏng vấn rõ ràng, đồng nghiệp thân thiện."
+  }
+}
+
+docs {
+  One review per user per company; calling again updates it. rating 1–5, content ≤ 1000 chars.
+}

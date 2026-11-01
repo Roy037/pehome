@@ -1,0 +1,11 @@
+meta {
+  name: Fetch job by id (public)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/jobs/{{jobId}}
+  body: none
+  auth: none
+}

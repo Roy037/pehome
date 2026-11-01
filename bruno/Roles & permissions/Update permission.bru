@@ -1,0 +1,25 @@
+meta {
+  name: Update permission
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/permissions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 1,
+    "name": "Create a company",
+    "apiPath": "/api/v1/companies",
+    "method": "POST",
+    "module": "COMPANIES"
+  }
+}
+
+docs {
+  SUPER_ADMIN. The (apiPath, method) pair must stay unique.
+}

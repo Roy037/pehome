@@ -23,6 +23,7 @@ public class ResUserDTO {
     private Instant createdAt;
     private CompanyUser company;
     private RoleUser role;
+    private boolean locked;
 
     @Getter
     @Setter
