@@ -50,7 +50,8 @@ public class TalentController {
 
     @GetMapping("/{id}/cv")
     @ApiMessage("Stream a candidate's CV")
-    public ResponseEntity<Resource> cv(@PathVariable("id") long id) throws IdInvalidException, PermissionException, StorageException {
-        return this.fileService.serveResume(this.talentService.cvOf(id));
+    public ResponseEntity<Resource> cv(@PathVariable("id") long id, @RequestParam(defaultValue = "0") int index)
+            throws IdInvalidException, PermissionException, StorageException {
+        return this.fileService.serveResume(this.talentService.cvOf(id, index));
     }
 }

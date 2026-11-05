@@ -5,11 +5,15 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/talents/1/cv
+  url: {{baseUrl}}/talents/1/cv?index=0
   body: none
   auth: inherit
 }
 
+params:query {
+  index: 0
+}
+
 docs {
-  CV file of an opted-in candidate, same rules as the detail.
+  One file of an opted-in candidate, same rules as the detail. index counts from 0 in the order of cvNames from the detail (default 0). 404 if there is no such file.
 }

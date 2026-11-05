@@ -12,6 +12,6 @@ public record ResTalentDTO(long id, String name, String avatar, String headline,
         Instant updatedAt) {
 
     public record Detail(ResTalentDTO talent, String email, List<String> shortGoals, List<String> longGoals,
-            List<CandidateProfile.Experience> experiences, String cvName) {
+            List<CandidateProfile.Experience> experiences, List<String> cvNames) {
     }
 }

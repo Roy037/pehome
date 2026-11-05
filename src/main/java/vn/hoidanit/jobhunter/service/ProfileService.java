@@ -87,23 +87,30 @@ public class ProfileService {
         replace(profile.getSkills(), req.getSkills());
         replace(profile.getReferences(), req.getReferences());
 
-        String cvUrl = blankToNull(req.getCvUrl());
-        if (cvUrl != null && !cvUrl.equals(profile.getCvUrl()) && !FileService.isUploadedBy(cvUrl, user.getId())) {
-            throw new IdInvalidException("Tệp CV không hợp lệ.");
-        }
-        if (cvUrl == null) {
-            profile.setCvUrl(null);
-            profile.setCvName(null);
-            profile.setCvUpdatedAt(null);
-        } else {
-            if (!cvUrl.equals(profile.getCvUrl())) {
-                profile.setCvUpdatedAt(Instant.now());
-            }
-            profile.setCvUrl(cvUrl);
-            profile.setCvName(blankToNull(req.getCvName()));
-        }
+        replace(profile.getCvs(), keptCvs(profile, req.getCvs(), user));
 
         return toRes(this.profileRepository.save(profile), user);
+    }
+
+    private static List<CandidateProfile.Cv> keptCvs(CandidateProfile profile, List<CandidateProfile.Cv> requested, User user)
+            throws IdInvalidException {
+        List<CandidateProfile.Cv> kept = new ArrayList<>();
+        for (CandidateProfile.Cv item : requested == null ? List.<CandidateProfile.Cv>of() : requested) {
+            if (item == null || kept.stream().anyMatch(cv -> cv.getUrl().equals(item.getUrl()))) {
+                continue;
+            }
+            CandidateProfile.Cv known = profile.getCvs().stream()
+                    .filter(cv -> cv.getUrl().equals(item.getUrl())).findFirst().orElse(null);
+            if (known == null && !FileService.isUploadedBy(item.getUrl(), user.getId())) {
+                throw new IdInvalidException("Tệp CV không hợp lệ.");
+            }
+            CandidateProfile.Cv cv = new CandidateProfile.Cv();
+            cv.setUrl(item.getUrl());
+            cv.setName(blankToNull(item.getName()));
+            cv.setUpdatedAt(known != null ? known.getUpdatedAt() : Instant.now());
+            kept.add(cv);
+        }
+        return kept;
     }
 
     private static <T> void replace(List<T> target, List<T> source) {
@@ -152,9 +159,7 @@ public class ProfileService {
         res.setExperiences(new ArrayList<>(profile.getExperiences()));
         res.setSkills(new ArrayList<>(profile.getSkills()));
         res.setReferences(new ArrayList<>(profile.getReferences()));
-        res.setCvUrl(profile.getCvUrl());
-        res.setCvName(profile.getCvName());
-        res.setCvUpdatedAt(profile.getCvUpdatedAt());
+        res.setCvs(new ArrayList<>(profile.getCvs()));
         res.setUpdatedAt(profile.getUpdatedAt());
         return res;
     }

@@ -1,14 +1,18 @@
 package vn.hoidanit.jobhunter.controller;
 
+import java.util.List;
+
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import vn.hoidanit.jobhunter.domain.CandidateProfile;
 import vn.hoidanit.jobhunter.domain.request.ReqAvatarDTO;
 import vn.hoidanit.jobhunter.domain.request.ReqProfileDTO;
 import vn.hoidanit.jobhunter.domain.response.profile.ResProfileDTO;
@@ -30,15 +34,16 @@ public class ProfileController {
         this.fileService = fileService;
     }
 
-    // The CV kept in my profile, streamed to me only (CV files are not publicly served).
+    // One of the files kept in my profile (the first by default), streamed to me only (CV files are not publicly served).
     @GetMapping("/cv")
     @ApiMessage("Stream my profile CV")
-    public ResponseEntity<Resource> myCv() throws IdInvalidException, StorageException {
-        String stored = this.profileService.getMine().getCvUrl();
-        if (stored == null) {
-            throw new StorageException("Bạn chưa tải CV lên hồ sơ.");
+    public ResponseEntity<Resource> myCv(@RequestParam(defaultValue = "0") int index)
+            throws IdInvalidException, StorageException {
+        List<CandidateProfile.Cv> cvs = this.profileService.getMine().getCvs();
+        if (index < 0 || index >= cvs.size()) {
+            throw new StorageException("Không tìm thấy tệp CV trong hồ sơ của bạn.");
         }
-        return this.fileService.serveResume(stored);
+        return this.fileService.serveResume(cvs.get(index).getUrl());
     }
 
     @GetMapping

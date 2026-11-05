@@ -30,8 +30,6 @@ public class ResProfileDTO {
     private List<CandidateProfile.Experience> experiences;
     private List<CandidateProfile.Skill> skills;
     private List<CandidateProfile.Reference> references;
-    private String cvUrl;
-    private String cvName;
-    private Instant cvUpdatedAt;
+    private List<CandidateProfile.Cv> cvs;
     private Instant updatedAt;
 }
