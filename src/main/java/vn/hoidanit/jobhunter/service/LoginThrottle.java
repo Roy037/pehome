@@ -15,8 +15,6 @@ import vn.hoidanit.jobhunter.util.error.TooManyRequestsException;
  * Slows down password guessing: after {@link #MAX_FAILURES} wrong passwords for the same account within
  * {@link #WINDOW}, further log-in attempts are refused until the window passes. A successful log-in clears the count.
  */
-// ponytail: in-memory and per account, so it resets on restart and an attacker can lock a victim out for 15 minutes;
-// move to a shared store (and add per-IP limits behind the proxy) if the API is ever run on several instances.
 @Component
 public class LoginThrottle {
     static final int MAX_FAILURES = 8;

@@ -71,11 +71,8 @@ public class ReqProfileDTO {
     @Valid
     private List<CandidateProfile.Reference> references;
 
-    // Stored file name returned by POST /files (folder "resume"); blank removes the CV.
-    @Pattern(regexp = "^[A-Za-z0-9._-]*$", message = "Tên file CV không hợp lệ")
-    @Size(max = 250, message = "Tên file CV quá dài")
-    private String cvUrl;
-
-    @Size(max = 200, message = "Tên CV tối đa 200 ký tự")
-    private String cvName;
+    // The files kept on the profile (stored names returned by POST /files, folder "resume"); an empty list removes them all.
+    @Size(max = 3, message = "Tối đa 3 tệp CV")
+    @Valid
+    private List<CandidateProfile.Cv> cvs;
 }

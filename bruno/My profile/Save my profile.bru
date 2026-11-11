@@ -55,11 +55,15 @@ body:json {
         "email": "b@acme.example.com"
       }
     ],
-    "cvUrl": "",
-    "cvName": ""
+    "cvs": [
+      {
+        "url": "",
+        "name": "CV tiếng Anh"
+      }
+    ]
   }
 }
 
 docs {
-  Replaces the whole profile. experience: NONE | LT1 | Y1_3 | Y3_5 | GT5. level: INTERN | FRESHER | JUNIOR | MIDDLE | SENIOR. Months are "YYYY-MM". skill level 1-5. Limits: 10 goals each, 20 experiences, 30 skills, 5 references. avatar / cvUrl are fileName values from "Files"; blank removes them.
+  Replaces the whole profile. experience: NONE | LT1 | Y1_3 | Y3_5 | GT5. level: INTERN | FRESHER | JUNIOR | MIDDLE | SENIOR. Months are "YYYY-MM". skill level 1-5. Limits: 10 goals each, 20 experiences, 30 skills, 5 references. avatar and cvs[].url are fileName values from "Files"; a blank avatar removes it. cvs holds up to 3 files (a fourth gives 400) and replaces the saved list, so an empty list removes them all. Each file must be one you uploaded.
 }

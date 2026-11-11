@@ -146,17 +146,18 @@ public class TalentService {
         PlanEnum plan = this.planService.activePlan(profile.getUser().getId());
         return new ResTalentDTO.Detail(toSummary(profile, plan), profile.getUser().getEmail(),
                 new ArrayList<>(profile.getShortGoals()), new ArrayList<>(profile.getLongGoals()),
-                new ArrayList<>(profile.getExperiences()), profile.getCvName());
+                new ArrayList<>(profile.getExperiences()),
+                profile.getCvs().stream().map(cv -> cv.getName() == null ? "" : cv.getName()).toList());
     }
 
-    /** Stored file name of the opted-in candidate's CV. */
-    public String cvOf(long id) throws IdInvalidException, PermissionException {
-        String cv = find(id).getCvUrl();
+    /** Stored file name of one of the opted-in candidate's files (counted from 0, in the order of the detail view). */
+    public String cvOf(long id, int index) throws IdInvalidException, PermissionException {
+        List<CandidateProfile.Cv> cvs = find(id).getCvs();
         assertUnlocked();
-        if (cv == null) {
+        if (index < 0 || index >= cvs.size()) {
             throw new ResourceNotFoundException("Ứng viên chưa tải CV lên hồ sơ.");
         }
-        return cv;
+        return cvs.get(index).getUrl();
     }
 
     private CandidateProfile find(long id) throws IdInvalidException, PermissionException {
@@ -169,6 +170,6 @@ public class TalentService {
         User u = p.getUser();
         return new ResTalentDTO(p.getId(), u.getName(), u.getAvatar(), p.getHeadline(), p.getExperience(), p.getLevel(),
                 p.getIndustry(), p.getOccupation(), new ArrayList<>(p.getSkills()), plan != null && plan.isHighlight(),
-                p.getCvUrl() != null, p.getUpdatedAt());
+                !p.getCvs().isEmpty(), p.getUpdatedAt());
     }
 }

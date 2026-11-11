@@ -63,10 +63,6 @@ public class CandidateProfile {
     @Column(columnDefinition = "bit(1) not null default 0")
     private boolean visibleToEmployers;
 
-    private String cvUrl;
-    private String cvName;
-    private Instant cvUpdatedAt;
-
     @ElementCollection
     @CollectionTable(name = "profile_short_goals", joinColumns = @JoinColumn(name = "profile_id",
             foreignKey = @ForeignKey(name = "fk_profile_short_goals", foreignKeyDefinition = "foreign key (profile_id) references candidate_profiles (id) on delete cascade")))
@@ -98,6 +94,12 @@ public class CandidateProfile {
             foreignKey = @ForeignKey(name = "fk_profile_references", foreignKeyDefinition = "foreign key (profile_id) references candidate_profiles (id) on delete cascade")))
     @OrderColumn(name = "sort_order")
     private List<Reference> references = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "profile_cvs", joinColumns = @JoinColumn(name = "profile_id",
+            foreignKey = @ForeignKey(name = "fk_profile_cvs", foreignKeyDefinition = "foreign key (profile_id) references candidate_profiles (id) on delete cascade")))
+    @OrderColumn(name = "sort_order")
+    private List<Cv> cvs = new ArrayList<>();
 
     private Instant updatedAt;
 
@@ -167,5 +169,20 @@ public class CandidateProfile {
         @Email(message = "Email người tham khảo chưa hợp lệ")
         @Size(max = 120, message = "Email tối đa 120 ký tự")
         private String email;
+    }
+
+    @Embeddable
+    @Getter
+    @Setter
+    public static class Cv {
+        @NotBlank(message = "Tên file CV không được để trống")
+        @Pattern(regexp = "^[A-Za-z0-9._-]+$", message = "Tên file CV không hợp lệ")
+        @Size(max = 250, message = "Tên file CV quá dài")
+        private String url;
+
+        @Size(max = 200, message = "Tên CV tối đa 200 ký tự")
+        private String name;
+
+        private Instant updatedAt;
     }
 }

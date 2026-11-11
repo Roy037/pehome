@@ -10,15 +10,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import vn.hoidanit.jobhunter.domain.Company;
+import vn.hoidanit.jobhunter.domain.Job;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.repository.CompanyRepository;
 import vn.hoidanit.jobhunter.repository.JobRepository;
 import vn.hoidanit.jobhunter.repository.PlanOrderRepository;
 import vn.hoidanit.jobhunter.repository.ResumeRepository;
+import vn.hoidanit.jobhunter.repository.SkillRepository;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 
 /**
- * Sign-up and the admin create endpoints bind the entity straight from the request body. With a numeric id in the
+ * Sign-up and the create endpoints bind the entity straight from the request body. With a numeric id in the
  * body, save() used to update that row (for example the seeded admin) instead of inserting a new one.
  */
 class CreateIgnoresIdTests {
@@ -54,6 +56,23 @@ class CreateIgnoresIdTests {
 
         ArgumentCaptor<Company> saved = ArgumentCaptor.forClass(Company.class);
         verify(companies).save(saved.capture());
+        assertEquals(0, saved.getValue().getId());
+    }
+
+    @Test
+    void creatingAJobNeverReplacesAnExistingRow() throws Exception {
+        JobRepository jobs = mock(JobRepository.class);
+        when(jobs.save(any(Job.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        JobService service = new JobService(jobs, mock(SkillRepository.class), mock(CompanyRepository.class),
+                mock(UserService.class), mock(ResumeRepository.class), mock(NotificationService.class),
+                mock(PlanService.class));
+        Job body = new Job();
+        body.setId(1);
+
+        service.create(body);
+
+        ArgumentCaptor<Job> saved = ArgumentCaptor.forClass(Job.class);
+        verify(jobs).save(saved.capture());
         assertEquals(0, saved.getValue().getId());
     }
 }

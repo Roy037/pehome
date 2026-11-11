@@ -1317,14 +1317,14 @@
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"name\": \"Nguyễn Minh Anh\",\n  \"avatar\": \"\",\n  \"headline\": \"Frontend Developer\",\n  \"experience\": \"Y1_3\",\n  \"level\": \"JUNIOR\",\n  \"industry\": \"Phần mềm & Dịch vụ CNTT\",\n  \"occupation\": \"Lập trình Frontend\",\n  \"jobAlert\": true,\n  \"shortGoals\": [\n    \"Thành thạo React và TypeScript\"\n  ],\n  \"longGoals\": [\n    \"Trở thành Tech Lead\"\n  ],\n  \"experiences\": [\n    {\n      \"company\": \"ACME Software\",\n      \"title\": \"Thực tập sinh Frontend\",\n      \"fromMonth\": \"2023-05\",\n      \"toMonth\": \"2023-08\",\n      \"current\": false,\n      \"description\": \"Xây dựng giao diện với React.\"\n    }\n  ],\n  \"skills\": [\n    {\n      \"name\": \"React\",\n      \"level\": 4\n    },\n    {\n      \"name\": \"Giao tiếp tiếng Anh\",\n      \"level\": 3\n    }\n  ],\n  \"references\": [\n    {\n      \"name\": \"Nguyễn Văn B\",\n      \"title\": \"Engineering Manager\",\n      \"company\": \"ACME Software\",\n      \"phone\": \"0900000000\",\n      \"email\": \"b@acme.example.com\"\n    }\n  ],\n  \"cvUrl\": \"\",\n  \"cvName\": \"\"\n}",
+                            "raw": "{\n  \"name\": \"Nguyễn Minh Anh\",\n  \"avatar\": \"\",\n  \"headline\": \"Frontend Developer\",\n  \"experience\": \"Y1_3\",\n  \"level\": \"JUNIOR\",\n  \"industry\": \"Phần mềm & Dịch vụ CNTT\",\n  \"occupation\": \"Lập trình Frontend\",\n  \"jobAlert\": true,\n  \"shortGoals\": [\n    \"Thành thạo React và TypeScript\"\n  ],\n  \"longGoals\": [\n    \"Trở thành Tech Lead\"\n  ],\n  \"experiences\": [\n    {\n      \"company\": \"ACME Software\",\n      \"title\": \"Thực tập sinh Frontend\",\n      \"fromMonth\": \"2023-05\",\n      \"toMonth\": \"2023-08\",\n      \"current\": false,\n      \"description\": \"Xây dựng giao diện với React.\"\n    }\n  ],\n  \"skills\": [\n    {\n      \"name\": \"React\",\n      \"level\": 4\n    },\n    {\n      \"name\": \"Giao tiếp tiếng Anh\",\n      \"level\": 3\n    }\n  ],\n  \"references\": [\n    {\n      \"name\": \"Nguyễn Văn B\",\n      \"title\": \"Engineering Manager\",\n      \"company\": \"ACME Software\",\n      \"phone\": \"0900000000\",\n      \"email\": \"b@acme.example.com\"\n    }\n  ],\n  \"cvs\": [\n    {\n      \"url\": \"\",\n      \"name\": \"CV tiếng Anh\"\n    }\n  ]\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
                                 }
                             }
                         },
-                        "description": "Replaces the whole profile. experience: NONE | LT1 | Y1_3 | Y3_5 | GT5. level: INTERN | FRESHER | JUNIOR | MIDDLE | SENIOR. Months are \"YYYY-MM\". skill level 1-5. Limits: 10 goals each, 20 experiences, 30 skills, 5 references. avatar / cvUrl are fileName values from \"Files\"; blank removes them."
+                        "description": "Replaces the whole profile. experience: NONE | LT1 | Y1_3 | Y3_5 | GT5. level: INTERN | FRESHER | JUNIOR | MIDDLE | SENIOR. Months are \"YYYY-MM\". skill level 1-5. Limits: 10 goals each, 20 experiences, 30 skills, 5 references. avatar and cvs[].url are fileName values from \"Files\"; a blank avatar removes it. cvs holds up to 3 files (a fourth gives 400) and replaces the saved list, so an empty list removes them all. Each file must be one you uploaded."
                     }
                 },
                 {
@@ -1333,7 +1333,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/me/profile/cv",
+                            "raw": "{{baseUrl}}/me/profile/cv?index=0",
                             "host": [
                                 "{{baseUrl}}"
                             ],
@@ -1341,9 +1341,16 @@
                                 "me",
                                 "profile",
                                 "cv"
+                            ],
+                            "query": [
+                                {
+                                    "key": "index",
+                                    "value": "0",
+                                    "description": "Counts from 0 (default 0)"
+                                }
                             ]
                         },
-                        "description": "Streams the CV saved in my own profile. 400 if none is saved."
+                        "description": "Streams one file saved in my own profile. index counts from 0 in the order of cvs (default 0). 400 if there is no such file."
                     }
                 },
                 {
@@ -2822,7 +2829,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/talents/1/cv",
+                            "raw": "{{baseUrl}}/talents/1/cv?index=0",
                             "host": [
                                 "{{baseUrl}}"
                             ],
@@ -2830,9 +2837,16 @@
                                 "talents",
                                 "1",
                                 "cv"
+                            ],
+                            "query": [
+                                {
+                                    "key": "index",
+                                    "value": "0",
+                                    "description": "Counts from 0 (default 0)"
+                                }
                             ]
                         },
-                        "description": "CV file of an opted-in candidate, same rules as the detail."
+                        "description": "One file of an opted-in candidate, same rules as the detail. index counts from 0 in the order of cvNames from the detail (default 0). 404 if there is no such file."
                     }
                 }
             ]

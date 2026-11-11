@@ -46,7 +46,6 @@ public class WalletPaymentScheduler {
 
     private void reconcile(PaymentMethodEnum method) {
         Instant now = Instant.now();
-        // ponytail: bounded sandbox batch; add pagination/backoff if pending traffic exceeds 20 orders per minute.
         for (PlanOrder order : this.orders.findTop20ByMethodAndStatusAndCreatedAtBetweenOrderByCreatedAtAsc(
                 method, OrderStatusEnum.PENDING, now.minus(Duration.ofDays(1)), now.minusSeconds(60))) {
             try {

@@ -43,6 +43,7 @@ import vn.hoidanit.jobhunter.util.constant.OrderStatusEnum;
 import vn.hoidanit.jobhunter.util.constant.PaymentMethodEnum;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 import vn.hoidanit.jobhunter.util.error.PermissionException;
+import vn.hoidanit.jobhunter.util.error.ResourceNotFoundException;
 
 /** What an employer buys: a pinned job, places for open jobs, the talent directory. */
 class EmployerProductsTests {
@@ -239,15 +240,21 @@ class EmployerProductsTests {
         PlanService plans = mock(PlanService.class);
         TalentService talent = new TalentService(profiles, users, plans);
         CandidateProfile profile = new CandidateProfile();
-        profile.setCvUrl("cv.pdf");
+        for (String file : List.of("cv.pdf", "ielts.jpg")) {
+            CandidateProfile.Cv cv = new CandidateProfile.Cv();
+            cv.setUrl(file);
+            profile.getCvs().add(cv);
+        }
         when(profiles.findOne(any(Specification.class))).thenReturn(Optional.of(profile));
         when(users.handleGetCurrentUser()).thenReturn(this.hr);
 
         when(plans.talentUnlockedUntil(anyLong(), any())).thenReturn(null);
-        assertThrows(PermissionException.class, () -> talent.cvOf(1));
+        assertThrows(PermissionException.class, () -> talent.cvOf(1, 0));
 
         when(plans.talentUnlockedUntil(anyLong(), any())).thenReturn(Instant.now().plus(Duration.ofDays(2)));
-        assertEquals("cv.pdf", talent.cvOf(1));
+        assertEquals("cv.pdf", talent.cvOf(1, 0));
+        assertEquals("ielts.jpg", talent.cvOf(1, 1), "every file on the profile can be opened");
+        assertThrows(ResourceNotFoundException.class, () -> talent.cvOf(1, 2));
 
         User admin = new User();
         Role role = new Role();
@@ -255,6 +262,6 @@ class EmployerProductsTests {
         admin.setRole(role);
         when(users.handleGetCurrentUser()).thenReturn(admin);
         when(plans.talentUnlockedUntil(anyLong(), any())).thenReturn(null);
-        assertEquals("cv.pdf", talent.cvOf(1), "an admin never needs the unlock");
+        assertEquals("cv.pdf", talent.cvOf(1, 0), "an admin never needs the unlock");
     }
 }
