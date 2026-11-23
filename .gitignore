@@ -44,3 +44,5 @@ application-local.properties
 
 ### macOS ###
 .DS_Store
+
+.env
