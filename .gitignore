@@ -37,7 +37,7 @@ out/
 .vscode/
 
 ### Local secrets (never commit) ###
-
+.env
 .env.*
 !.env.example
 application-local.properties
