@@ -80,6 +80,19 @@ public class FileService {
         return tmpDir.length();
     }
 
+    public void deleteStored(String fileName, String folder) throws StorageException, URISyntaxException {
+        if (fileName == null || !fileName.matches("[A-Za-z0-9._-]+") || fileName.contains("..")) {
+            throw new StorageException("Tên tệp không hợp lệ.");
+        }
+        URI uri = new URI(baseURI + folder + "/" + fileName);
+        Path path = Paths.get(uri);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new StorageException("Không thể xóa tệp.");
+        }
+    }
+
     public InputStreamResource getResource(String fileName, String folder)
             throws URISyntaxException, FileNotFoundException {
         URI uri = new URI(baseURI + folder + "/" + fileName);

@@ -26,7 +26,9 @@ public class PermissionInterceptor implements HandlerInterceptor {
             "POST /api/v1/subscribers/unsubscribe",
             "POST /api/v1/resumes", "POST /api/v1/resumes/by-user",
             // authorised inside the controller (owner, the job's company, or SUPER_ADMIN)
-            "GET /api/v1/resumes/{id}/document", "GET /api/v1/resumes/check-applied");
+            "GET /api/v1/resumes/{id}/document", "GET /api/v1/resumes/check-applied",
+            "GET /api/v1/me/profile", "PUT /api/v1/me/profile", "PUT /api/v1/me/profile/avatar",
+            "GET /api/v1/me/profile/cv", "DELETE /api/v1/me/profile/cv/{index}");
 
     // Reading jobs, companies and skills is public; writing them needs a role permission.
     private static final List<String> PUBLIC_READ = List.of("/api/v1/jobs", "/api/v1/companies", "/api/v1/skills");

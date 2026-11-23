@@ -24,13 +24,17 @@ import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.request.ReqProfileDTO;
 import vn.hoidanit.jobhunter.domain.response.profile.ResProfileDTO;
 import vn.hoidanit.jobhunter.repository.CandidateProfileRepository;
+import vn.hoidanit.jobhunter.repository.ResumeRepository;
 import vn.hoidanit.jobhunter.repository.SubscriberRepository;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
+import vn.hoidanit.jobhunter.util.error.StorageException;
 
 class ProfileCvsTests {
     CandidateProfileRepository profiles = mock(CandidateProfileRepository.class);
+    ResumeRepository resumes = mock(ResumeRepository.class);
+    FileService files = mock(FileService.class);
     UserService users = mock(UserService.class);
-    ProfileService service = new ProfileService(profiles, mock(SubscriberRepository.class), users);
+    ProfileService service = new ProfileService(profiles, mock(SubscriberRepository.class), users, resumes, files);
     CandidateProfile profile = new CandidateProfile();
 
     @BeforeEach
@@ -97,6 +101,33 @@ class ProfileCvsTests {
         req.setCvs(List.of());
 
         assertTrue(service.saveMine(req).getCvs().isEmpty());
+    }
+
+    @Test
+    void deletingOneCvRemovesItAndTheStoredFileWhenUnused() throws Exception {
+        profile.getCvs().add(cv("1-u7-en.pdf", "English"));
+        profile.getCvs().add(cv("2-u7-vi.pdf", "Vietnamese"));
+        when(resumes.existsByUrl("1-u7-en.pdf")).thenReturn(false);
+
+        ResProfileDTO res = service.deleteCv(0);
+
+        assertEquals(List.of("2-u7-vi.pdf"), res.getCvs().stream().map(CandidateProfile.Cv::getUrl).toList());
+        verify(files).deleteStored("1-u7-en.pdf", "resume");
+    }
+
+    @Test
+    void deletingAProfileCvKeepsTheFileWhenAnApplicationUsesIt() throws Exception {
+        profile.getCvs().add(cv("1-u7-en.pdf", "English"));
+        when(resumes.existsByUrl("1-u7-en.pdf")).thenReturn(true);
+
+        service.deleteCv(0);
+
+        verify(files, never()).deleteStored(any(), any());
+    }
+
+    @Test
+    void deletingOutsideTheProfileCvListFails() {
+        assertThrows(StorageException.class, () -> service.deleteCv(0));
     }
 
     @Test

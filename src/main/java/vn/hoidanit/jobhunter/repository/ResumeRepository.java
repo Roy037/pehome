@@ -15,6 +15,7 @@ import vn.hoidanit.jobhunter.domain.Resume;
 public interface ResumeRepository extends JpaRepository<Resume, Long>,
         JpaSpecificationExecutor<Resume> {
     boolean existsByUserIdAndJobId(long userId, long jobId);
+    boolean existsByUrl(String url);
 
     boolean existsByJobId(long jobId);
 

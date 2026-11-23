@@ -13,8 +13,10 @@ import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.request.ReqProfileDTO;
 import vn.hoidanit.jobhunter.domain.response.profile.ResProfileDTO;
 import vn.hoidanit.jobhunter.repository.CandidateProfileRepository;
+import vn.hoidanit.jobhunter.repository.ResumeRepository;
 import vn.hoidanit.jobhunter.repository.SubscriberRepository;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
+import vn.hoidanit.jobhunter.util.error.StorageException;
 
 @Service
 @Transactional
@@ -23,12 +25,16 @@ public class ProfileService {
     private final CandidateProfileRepository profileRepository;
     private final SubscriberRepository subscriberRepository;
     private final UserService userService;
+    private final ResumeRepository resumeRepository;
+    private final FileService fileService;
 
     public ProfileService(CandidateProfileRepository profileRepository, SubscriberRepository subscriberRepository,
-            UserService userService) {
+            UserService userService, ResumeRepository resumeRepository, FileService fileService) {
         this.profileRepository = profileRepository;
         this.subscriberRepository = subscriberRepository;
         this.userService = userService;
+        this.resumeRepository = resumeRepository;
+        this.fileService = fileService;
     }
 
 
@@ -90,6 +96,27 @@ public class ProfileService {
         replace(profile.getCvs(), keptCvs(profile, req.getCvs(), user));
 
         return toRes(this.profileRepository.save(profile), user);
+    }
+
+    public ResProfileDTO deleteCv(int index) throws IdInvalidException, StorageException {
+        User user = this.userService.handleGetCurrentUser();
+        CandidateProfile profile = this.profileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new IdInvalidException("Không tìm thấy hồ sơ ứng viên."));
+        if (index < 0 || index >= profile.getCvs().size()) {
+            throw new StorageException("Không tìm thấy tệp CV trong hồ sơ của bạn.");
+        }
+
+        CandidateProfile.Cv removed = profile.getCvs().remove(index);
+        CandidateProfile saved = this.profileRepository.save(profile);
+
+        if (!this.resumeRepository.existsByUrl(removed.getUrl())) {
+            try {
+                this.fileService.deleteStored(removed.getUrl(), "resume");
+            } catch (java.net.URISyntaxException e) {
+                throw new StorageException("Không thể xóa tệp CV.");
+            }
+        }
+        return toRes(saved, user);
     }
 
     private static List<CandidateProfile.Cv> keptCvs(CandidateProfile profile, List<CandidateProfile.Cv> requested, User user)

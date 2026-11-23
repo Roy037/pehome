@@ -26,6 +26,56 @@ This source code is provided **exclusively for enrolled students** in this cours
 ===
 Môi trường chạy dự án: Java 17
 
+### Tổ chức mã nguồn Backend
+
+Backend nằm trong `src/main/java/vn/hoidanit/jobhunter/`. Request từ frontend thường đi qua các lớp theo thứ tự:
+
+```text
+Frontend → controller → service → repository → database
+                         ↓
+                  domain / DTO
+```
+
+- `controller/`: khai báo REST API dưới `/api/v1`; nhận request, gọi service và trả response. Đây là nơi bắt đầu khi cần tìm API mà một màn hình frontend đang gọi.
+- `service/`: xử lý nghiệp vụ như xác thực, việc làm, hồ sơ ứng tuyển, công ty, email và thanh toán.
+- `repository/`: truy vấn dữ liệu qua Spring Data JPA.
+- `domain/`: entity ánh xạ bảng database; `domain/request/` và `domain/response/` chứa DTO nhận và trả dữ liệu API.
+- `config/`: cấu hình ứng dụng, Spring Security, CORS, kiểm tra quyền, lọc request và khởi tạo dữ liệu.
+- `oauth/`: đăng nhập qua Google, Facebook và LinkedIn.
+- `util/`: tiện ích dùng chung, hằng số, annotation và các loại lỗi API.
+
+#### Tìm backend xử lý từng phần của website
+
+| Phần trên website | Controller/API tiêu biểu | Nơi xem tiếp |
+| --- | --- | --- |
+| Đăng nhập, đăng ký, xác thực email, đặt lại mật khẩu | `AuthController` — `/api/v1/auth/...` | `AuthController` → `UserService`, `EmailVerificationService`, `PasswordResetService` |
+| Tìm việc, chi tiết và quản lý tin tuyển dụng | `JobController` — `/api/v1/jobs` | `JobController` → `JobService` → `JobRepository` |
+| Danh sách/chi tiết công ty, duyệt công ty | `CompanyController` — `/api/v1/companies` | `CompanyController` → `CompanyService` → `CompanyRepository` |
+| Theo dõi công ty | `CompanyFollowController` — `/api/v1/me/followed-companies` | `CompanyFollowService` |
+| Hồ sơ cá nhân, CV trong hồ sơ | `ProfileController` — `/api/v1/me/profile` | `ProfileService`, `CandidateProfile` |
+| Ứng tuyển và quản lý hồ sơ ứng viên | `ResumeController` — `/api/v1/resumes` | `ResumeService`, `ResumeRepository`, `Resume` |
+| Việc làm đã lưu | `SavedJobController` — `/api/v1/me/saved-jobs` | `SavedJobService`, `SavedJobRepository` |
+| Báo cáo tin tuyển dụng | `JobReportController` — `/api/v1/me/job-reports`, `/api/v1/job-reports` | `JobReportService`, `JobReportRepository` |
+| Đánh giá công ty | `ReviewController` — `/api/v1/companies/{companyId}/reviews` | `ReviewService`, `ReviewRepository` |
+| Admin: tài khoản, vai trò, quyền | `UserController`, `RoleController`, `PermissionController` | Các service và repository cùng tên |
+| Admin: thống kê và danh sách ứng viên | `StatsController`, `TalentController` | `StatsService`, `TalentService` |
+| Gói dịch vụ và thanh toán | `PaymentController` — `/api/v1/plans`, `/api/v1/me/orders`, `/api/v1/payments/...` | `PaymentService`, `PlanService`, `VnpayService`, `MomoService`, `ZalopayService` |
+| Tệp tải lên và tải xuống | `FileController` — `/api/v1/files` | `FileService`; quyền truy cập CV được xử lý riêng trong `ResumeController` và `ProfileController` |
+| Nhận bản tin việc làm | `SubscriberController` — `/api/v1/subscribers` | `SubscriberService`, `JobAlertService` |
+
+Tên controller ở bảng là tên lớp trong `controller/`, ví dụ `JobController` nằm tại `src/main/java/vn/hoidanit/jobhunter/controller/JobController.java`.
+
+#### Cấu hình, database và kiểm thử
+
+- `src/main/resources/application.properties`: cấu hình Spring Boot; secret và mật khẩu được lấy từ môi trường hoặc file `.env`, không lưu trực tiếp trong mã nguồn.
+- `src/main/resources/db/migration/`: các migration Flyway `V1`–`V22`, dùng để tạo và nâng cấp schema database.
+- `src/main/resources/templates/`: mẫu email và trang chia sẻ; `src/main/resources/static/`: tài nguyên tĩnh của backend.
+- `src/test/java/vn/hoidanit/jobhunter/`: kiểm thử service, controller, OAuth, cấu hình và tiện ích.
+- `JobhunterApplication.java`: điểm vào chạy ứng dụng; bật xử lý email bất đồng bộ và các lịch tác vụ.
+- `HUONG-DAN-CAI-DAT.md`: hướng dẫn cài đặt/chạy backend trên máy local.
+
+**Cách lần theo một chức năng:** tìm endpoint trong `controller/` → theo lời gọi sang `service/` → xem truy vấn ở `repository/` → kiểm tra entity/DTO trong `domain/`. Để tìm nơi frontend gọi endpoint đó, tra tên API trong `FE-pehome/src/config/api.ts`.
+
 ### Cấu hình bí mật (bắt buộc trước khi chạy)
 `application.properties` không còn chứa mật khẩu hay secret. Sao chép `.env.example` thành `.env` (đã được git bỏ qua) rồi điền:
 
@@ -135,4 +185,3 @@ Tiktok “Hỏi Dân IT” :  https://www.tiktok.com/@hoidanit
 Fanpage “Hỏi Dân IT” : https://www.facebook.com/askITwithERIC/
 
 Udemy Hỏi Dân IT: https://www.udemy.com/user/eric-7039/
-

@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.hoidanit.jobhunter.domain.response.file.ResUploadFileDTO;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.service.FileService;
+import vn.hoidanit.jobhunter.service.ProfileService;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.FileSignature;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
@@ -43,6 +44,7 @@ public class FileController {
     private static final List<String> PRIVATE_FOLDERS = Arrays.asList("resume", "company-doc");
 
     private final FileService fileService;
+    private final ProfileService profileService;
 
     private static void checkFolder(String folder) throws StorageException {
         if (folder == null || !FOLDERS.contains(folder)) {
@@ -52,9 +54,10 @@ public class FileController {
 
     private final UserService userService;
 
-    public FileController(FileService fileService, UserService userService) {
+    public FileController(FileService fileService, UserService userService, ProfileService profileService) {
         this.fileService = fileService;
         this.userService = userService;
+        this.profileService = profileService;
     }
 
     @PostMapping("/files")
@@ -79,6 +82,9 @@ public class FileController {
             throw new StorageException("Nội dung tệp không phải " + extension.toUpperCase() + " hợp lệ.");
         }
         User me = this.userService.handleGetCurrentUser();
+        if ("resume".equals(folder) && this.profileService.getMine().getCvs().size() >= 3) {
+            throw new StorageException("Tối đa 3 tệp CV trong hồ sơ.");
+        }
         // company logos and banners are public images: only employers (and admins) may publish them
         boolean admin = me.getRole() != null && "SUPER_ADMIN".equals(me.getRole().getName());
         if (("company".equals(folder) || "company-doc".equals(folder)) && me.getCompany() == null && !admin) {

@@ -6,6 +6,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -64,5 +66,12 @@ public class ProfileController {
     @ApiMessage("Save my candidate profile")
     public ResponseEntity<ResProfileDTO> saveMine(@Valid @RequestBody ReqProfileDTO req) throws IdInvalidException {
         return ResponseEntity.ok(this.profileService.saveMine(req));
+    }
+
+    @DeleteMapping("/cv/{index}")
+    @ApiMessage("Delete one CV from my candidate profile")
+    public ResponseEntity<ResProfileDTO> deleteCv(@PathVariable int index)
+            throws IdInvalidException, StorageException {
+        return ResponseEntity.ok(this.profileService.deleteCv(index));
     }
 }
